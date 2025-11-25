@@ -7,9 +7,9 @@ export async function onRequestPost({ request, env }) {
     const data = await request.json();
     const amount = data.amount; // amount in cents
 
-    // Initialize Stripe with secret key stored as Cloudflare Pages Secret
+    // Use Stripe secret key stored as a Cloudflare Pages Secret
     const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-      apiVersion: "2023-08-16"
+      apiVersion: "2023-08-16",
     });
 
     // Create PaymentIntent
