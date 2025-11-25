@@ -4,90 +4,48 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MEL Shop</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 2rem;
-      background: #f5f5f5;
-      color: #000;
-    }
-    #card-element {
-      background: #fff;
-      padding: 1rem;
-      border-radius: 4px;
-      margin-bottom: 1rem;
-    }
-    #pay-button {
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      background: #000;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    #pay-button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    #payment-message {
-      margin-top: 1rem;
-      font-weight: bold;
-    }
-  </style>
+  <script src="https://js.stripe.com/v3/"></script> <!-- Stripe.js -->
 </head>
 <body>
   <h1>MEL Radius Table: $600 USD</h1>
 
-  <div id="card-element"></div>
-  <button id="pay-button">Pay $600</button>
-  <div id="payment-message"></div>
+  <form id="payment-form">
+    <div id="card-element"><!-- Stripe Element will go here --></div>
+    <button type="submit">Pay</button>
+  </form>
 
-  <!-- Stripe.js -->
-  <script src="https://js.stripe.com/v3/"></script>
+  <div id="payment-result"></div>
+
   <script>
-    const stripe = Stripe("pk_live_51SVcSEAxCX5hk2YKsiojWL8rpBAiVAZpwMqnUSfQdJFlwtKEOo2JnblmbNvwAr1fUlyLAyXgNxvbBw6yO0pZTzuV00gYr1w8UI"); // Replace with your publishable key
-    const payButton = document.getElementById('pay-button');
-    const paymentMessage = document.getElementById('payment-message');
+    const stripe = Stripe('YOUR_PUBLISHABLE_KEY'); // replace with your Stripe Publishable Key
 
-    // Create an instance of Elements
-    const elements = stripe.elements();
-    const card = elements.create('card');
-    card.mount('#card-element');
+    const paymentForm = document.getElementById('payment-form');
 
-    payButton.addEventListener('click', async () => {
-      payButton.disabled = true;
-      paymentMessage.textContent = 'Processing payment...';
+    paymentForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
 
-      // Call your serverless function to create a payment intent
-      const response = await fetch('/functions/create-payment-intent', {
+      // Create PaymentIntent on your serverless backend
+      const response = await fetch('/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: 60000 }) // $600 in cents
+        body: JSON.stringify({ amount: 60000 }) // amount in cents
       });
 
-      const data = await response.json();
-      if (data.error) {
-        paymentMessage.textContent = data.error;
-        payButton.disabled = false;
-        return;
-      }
+      const { clientSecret } = await response.json();
 
-      const clientSecret = data.clientSecret;
-
-      // Confirm the payment
-      const result = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: { card }
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: /* Stripe Element reference */,
+          billing_details: { name: 'Customer Name' }
+        }
       });
 
-      if (result.error) {
-        paymentMessage.textContent = result.error.message;
-        payButton.disabled = false;
-      } else if (result.paymentIntent.status === 'succeeded') {
-        paymentMessage.textContent = 'Payment successful! Thank you.';
+      if (error) {
+        document.getElementById('payment-result').textContent = error.message;
+      } else if (paymentIntent.status === 'succeeded') {
+        document.getElementById('payment-result').textContent = 'Payment succeeded!';
       }
     });
   </script>
 </body>
 </html>
-
