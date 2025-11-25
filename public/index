@@ -290,7 +290,7 @@
 <body>
   
   <div id="overlayText2">
-    <a href="https://www.mel.furniture">MEL</a>
+    <a href="/">MEL</a>
   </div>
 
   <div id="cart-badge">
@@ -374,10 +374,10 @@
   <footer>
     <div class="footer-container">
       <div class="footer-links">
-        <a href="/information.html">Information</a>
-        <a href="/terms-and-conditions.html">Terms & Conditions</a>
+        <a href="information.html">Information</a>
+        <a href="terms-and-conditions.html">Terms & Conditions</a>
         <a href="https://www.instagram.com/mel_furniture" target="_blank">Instagram</a>
-        <a href="/downloads.html">Downloads</a>
+        <a href="downloads.html">Downloads</a>
       </div>
       <div>&copy; MEL Furniture LLC</div>
     </div>
