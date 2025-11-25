@@ -1,29 +1,33 @@
-import Stripe from 'stripe';
+export async function onRequest(context) {
+  // Only allow POST requests
+  if (context.request.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 });
+  }
 
-export async function onRequestPost({ request, env }) {
   try {
-    const data = await request.json();
-    const amount = data.amount; // amount in cents
-
-    const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-      apiVersion: '2023-08-16',
-    });
-
+    const stripe = require('stripe')(context.env.STRIPE_SECRET_KEY);
+    
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
+      amount: 60000, // $600.00 in cents
       currency: 'usd',
-      automatic_payment_methods: { enabled: true },
+      automatic_payment_methods: {
+        enabled: true,
+      },
     });
 
-    return new Response(JSON.stringify({ clientSecret: paymentIntent.client_secret }), {
-      headers: { 'Content-Type': 'application/json' },
+    return new Response(JSON.stringify({
+      clientSecret: paymentIntent.client_secret,
+    }), {
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      headers: { 'Content-Type': 'application/json' },
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
   }
 }
-
-
