@@ -334,7 +334,7 @@
 <body>
   
   <div id="overlayText2">
-    <a href="https://www.mel.furniture">MEL</a>
+    <a href="/">MEL</a>
   </div>
 
   <div class="container">
@@ -348,10 +348,10 @@
   <footer>
     <div class="footer-container">
       <div class="footer-links">
-        <a href="/information.html">Information</a>
-        <a href="/terms-and-conditions.html">Terms & Conditions</a>
+        <a href="information.html">Information</a>
+        <a href="terms-and-conditions.html">Terms & Conditions</a>
         <a href="https://www.instagram.com/mel_furniture" target="_blank">Instagram</a>
-        <a href="/downloads.html">Downloads</a>
+        <a href="downloads.html">Downloads</a>
       </div>
       <div>&copy; MEL Furniture LLC</div>
     </div>
@@ -404,7 +404,7 @@
         cartContent.innerHTML = `
           <div class="cart-empty">
             <p>Your cart is empty</p>
-            <a href="index.html">Continue Shopping</a>
+            <a href="/">Continue Shopping</a>
           </div>
         `;
         return;
@@ -449,7 +449,7 @@
             <span>$${total.toFixed(2)} USD</span>
           </div>
           <button class="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
-          <a href="index.html" class="continue-shopping">Continue Shopping</a>
+          <a href="/" class="continue-shopping">Continue Shopping</a>
         </div>
       `;
     }
