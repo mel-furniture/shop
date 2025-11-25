@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Checkout MEL</title>
+  <title>Checkout | MEL</title>
   <script src="https://js.stripe.com/v3/"></script>
 
   <style>
@@ -96,28 +96,43 @@
 
     .product-item {
       display: flex;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #d0d0d0;
+    }
+
+    .product-item:last-of-type {
+      border-bottom: none;
     }
 
     .product-image {
-      width: 100px;
-      height: 100px;
+      width: 80px;
+      height: 80px;
       background: #e0e0e0;
       flex-shrink: 0;
     }
 
+    .product-details {
+      flex: 1;
+    }
+
     .product-details h3 {
-      font-size: 1.125rem;
+      font-size: 1rem;
       font-weight: bold;
-      margin: 0 0 0.5rem 0;
+      margin: 0 0 0.25rem 0;
       color: #000;
     }
 
-    .product-details p {
-      font-size: 1rem;
-      color: #000;
+    .product-details .item-meta {
+      font-size: 0.9rem;
+      color: #666;
       margin: 0;
+    }
+
+    .item-price {
+      text-align: right;
+      font-weight: bold;
     }
 
     .price-breakdown {
@@ -138,6 +153,30 @@
       margin-top: 0.5rem;
       padding-top: 0.5rem;
       border-top: 1px solid #000;
+    }
+
+    .empty-cart {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .empty-cart p {
+      margin-bottom: 1.5rem;
+      color: #808080;
+    }
+
+    .empty-cart a {
+      background: #000;
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      text-decoration: none;
+      font-weight: bold;
+      display: inline-block;
+      transition: background 0.2s;
+    }
+
+    .empty-cart a:hover {
+      background: #808080;
     }
 
     /* ===== PAYMENT FORM ===== */
@@ -343,28 +382,8 @@
       <!-- Product Summary -->
       <div class="product-summary">
         <h2>Order Summary</h2>
-        
-        <div class="product-item">
-          <div class="product-image"></div>
-          <div class="product-details">
-            <h3>MEL Radius Table</h3>
-            <p>Handcrafted solid wood dining table</p>
-          </div>
-        </div>
-
-        <div class="price-breakdown">
-          <div class="price-row">
-            <span>Subtotal</span>
-            <span>$1.00</span>
-          </div>
-          <div class="price-row">
-            <span>Shipping</span>
-            <span>Calculated at next step</span>
-          </div>
-          <div class="price-row total">
-            <span>Total</span>
-            <span>$1.00 USD</span>
-          </div>
+        <div id="order-items">
+          <!-- Cart items will be inserted here -->
         </div>
       </div>
 
@@ -388,7 +407,7 @@
             <div id="card-element"></div>
           </div>
 
-          <button type="submit" id="submit-button">Pay $1.00</button>
+          <button type="submit" id="submit-button">Complete Purchase</button>
 
           <div class="secure-badge">
             Secure payment processing by Stripe
@@ -413,6 +432,70 @@
   </footer>
 
   <script>
+    // Get cart from localStorage
+    function getCart() {
+      const cart = localStorage.getItem('mel-cart');
+      return cart ? JSON.parse(cart) : [];
+    }
+
+    function calculateTotal() {
+      const cart = getCart();
+      return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    }
+
+    function renderOrderSummary() {
+      const cart = getCart();
+      const orderItems = document.getElementById('order-items');
+      
+      if (cart.length === 0) {
+        orderItems.innerHTML = `
+          <div class="empty-cart">
+            <p>Your cart is empty</p>
+            <a href="products.html">Browse Products</a>
+          </div>
+        `;
+        document.getElementById('payment-form').style.display = 'none';
+        return;
+      }
+
+      const itemsHTML = cart.map(item => `
+        <div class="product-item">
+          <div class="product-image"></div>
+          <div class="product-details">
+            <h3>${item.name}</h3>
+            <p class="item-meta">Quantity: ${item.quantity}</p>
+          </div>
+          <div class="item-price">
+            $${(item.price * item.quantity).toFixed(2)}
+          </div>
+        </div>
+      `).join('');
+
+      const total = calculateTotal();
+
+      orderItems.innerHTML = `
+        ${itemsHTML}
+        <div class="price-breakdown">
+          <div class="price-row">
+            <span>Subtotal</span>
+            <span>$${total.toFixed(2)}</span>
+          </div>
+          <div class="price-row">
+            <span>Shipping</span>
+            <span>Calculated after purchase</span>
+          </div>
+          <div class="price-row total">
+            <span>Total</span>
+            <span>$${total.toFixed(2)} USD</span>
+          </div>
+        </div>
+      `;
+
+      // Update button text
+      document.getElementById('submit-button').textContent = `Pay $${total.toFixed(2)}`;
+    }
+
+    // Initialize Stripe
     const stripe = Stripe('pk_live_51SVcSEAxCX5hk2YKsiojWL8rpBAiVAZpwMqnUSfQdJFlwtKEOo2JnblmbNvwAr1fUlyLAyXgNxvbBw6yO0pZTzuV00gYr1w8UI'); // Replace with your actual key
 
     const elements = stripe.elements();
@@ -437,17 +520,26 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      const cart = getCart();
+      if (cart.length === 0) {
+        messageDiv.textContent = 'Your cart is empty';
+        messageDiv.className = 'error';
+        return;
+      }
+
       submitButton.disabled = true;
       submitButton.textContent = 'Processing...';
       messageDiv.textContent = 'Processing your payment...';
       messageDiv.className = 'processing';
       
       try {
+        // Send cart to your serverless function
         const response = await fetch('/functions/create-payment-intent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ items: cart }),
         });
         
         const { clientSecret, error } = await response.json();
@@ -474,16 +566,21 @@
         messageDiv.className = 'success';
         submitButton.textContent = 'Payment Complete';
         
+        // Clear cart after successful payment
+        localStorage.removeItem('mel-cart');
+        
       } catch (err) {
         messageDiv.textContent = err.message;
         messageDiv.className = 'error';
         submitButton.disabled = false;
-        submitButton.textContent = 'Pay $1.00';
+        const total = calculateTotal();
+        submitButton.textContent = `Pay $${total.toFixed(2)}`;
       }
     });
+
+    // Render order summary on page load
+    renderOrderSummary();
   </script>
 
 </body>
 </html>
-
-
