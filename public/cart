@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cart | MEL</title>
+
+  <style>
+    /* ===== RESET ===== */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      background-color: #fff;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      font-family: sans-serif;
+      font-size: 1.125rem;
+      color: #000;
+      line-height: 1.35;
+    }
+
+    /* ===== MEL LOGO TOP LEFT ===== */
+    #overlayText2 {
+      position: fixed;
+      top: 2rem;
+      left: 2rem;
+      color: #000;
+      font-family: serif;
+      font-size: 1.125rem;
+      font-weight: bold;
+      letter-spacing: 0.075em;
+      z-index: 10;
+    }
+
+    #overlayText2 a {
+      color: #000;
+      text-decoration: none;
+    }
+
+    #overlayText2 a:hover {
+      color: #808080;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .container {
+      flex: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 4rem 2rem 2rem;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #000;
+      margin-top: 0;
+      margin-bottom: 0;
+      padding-bottom: 0.5em;
+      line-height: 1.2;
+    }
+
+    /* ===== CART ===== */
+    .cart-empty {
+      padding: 3rem 0;
+      text-align: center;
+    }
+
+    .cart-empty p {
+      margin-bottom: 2rem;
+      color: #808080;
+    }
+
+    .cart-empty a {
+      background: #000;
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      text-decoration: none;
+      font-weight: bold;
+      display: inline-block;
+      transition: background 0.2s;
+    }
+
+    .cart-empty a:hover {
+      background: #808080;
+    }
+
+    .cart-items {
+      margin-top: 2rem;
+    }
+
+    .cart-item {
+      display: grid;
+      grid-template-columns: 100px 1fr auto;
+      gap: 1.5rem;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid #F2F2F2;
+    }
+
+    .cart-item:first-child {
+      border-top: 1px solid #F2F2F2;
+    }
+
+    .item-image {
+      width: 100px;
+      height: 100px;
+      background: #F2F2F2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: #808080;
+    }
+
+    .item-details h3 {
+      font-size: 1.125rem;
+      font-weight: bold;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .item-price {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .quantity-btn {
+      background: #F2F2F2;
+      border: 1px solid #000;
+      width: 2rem;
+      height: 2rem;
+      font-size: 1.125rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .quantity-btn:hover {
+      background: #000;
+      color: #fff;
+    }
+
+    .quantity {
+      font-weight: bold;
+      min-width: 2rem;
+      text-align: center;
+    }
+
+    .remove-btn {
+      background: none;
+      border: none;
+      color: #808080;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 0.9rem;
+      padding: 0;
+      font-family: sans-serif;
+    }
+
+    .remove-btn:hover {
+      color: #000;
+    }
+
+    .item-total {
+      text-align: right;
+      font-weight: bold;
+      font-size: 1.125rem;
+    }
+
+    /* ===== CART SUMMARY ===== */
+    .cart-summary {
+      margin-top: 2rem;
+      padding: 2rem;
+      background: #F2F2F2;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      font-size: 1.125rem;
+    }
+
+    .summary-row.total {
+      font-weight: bold;
+      font-size: 1.25rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #000;
+    }
+
+    .checkout-btn {
+      background: #000;
+      color: #fff;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.125rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: sans-serif;
+      width: 100%;
+      margin-top: 1.5rem;
+    }
+
+    .checkout-btn:hover {
+      background: #808080;
+    }
+
+    .continue-shopping {
+      display: block;
+      text-align: center;
+      margin-top: 1.5rem;
+      color: #000;
+      text-decoration: underline;
+    }
+
+    .continue-shopping:hover {
+      color: #808080;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: #F2F2F2;
+      padding: 30px 20px;
+      text-align: left;
+      flex-shrink: 0;
+      margin: 0;
+      box-sizing: border-box;
+      color: #000;
+    }
+
+    footer .footer-container {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    footer .footer-links {
+      font-family: sans-serif;
+      font-size: 1.125rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+    }
+
+    footer .footer-links a {
+      color: #000;
+      text-decoration: none;
+      margin-left: 15px;
+      white-space: nowrap;
+    }
+
+    footer .footer-links a:first-child {
+      margin-left: 0;
+    }
+
+    footer .footer-links a:hover {
+      color: #808080;
+    }
+
+    footer .footer-links + div {
+      font-family: sans-serif;
+      font-size: 1.125rem;
+      color: #000;
+      margin-top: 0;
+    }
+
+    /* ===== MOBILE ===== */
+    @media (max-width: 768px) {
+      #overlayText2 {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+      }
+
+      .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+
+      .cart-item {
+        grid-template-columns: 80px 1fr;
+        gap: 1rem;
+      }
+
+      .item-image {
+        width: 80px;
+        height: 80px;
+      }
+
+      .item-total {
+        grid-column: 2;
+        text-align: left;
+        margin-top: 0.5rem;
+      }
+
+      footer .footer-container {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      footer .footer-links {
+        width: auto;
+        margin-bottom: 1rem;
+      }
+
+      footer .footer-links a {
+        margin-left: 0;
+        margin-right: 1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      footer .footer-links + div {
+        margin-top: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <div id="overlayText2">
+    <a href="https://www.mel.furniture">MEL</a>
+  </div>
+
+  <div class="container">
+    <h1>Shopping Cart</h1>
+
+    <div id="cart-content">
+      <!-- Cart items will be inserted here by JavaScript -->
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="/information.html">Information</a>
+        <a href="/terms-and-conditions.html">Terms & Conditions</a>
+        <a href="https://www.instagram.com/mel_furniture" target="_blank">Instagram</a>
+        <a href="/downloads.html">Downloads</a>
+      </div>
+      <div>&copy; MEL Furniture LLC</div>
+    </div>
+  </footer>
+
+  <script>
+    // Cart management functions
+    function getCart() {
+      const cart = localStorage.getItem('mel-cart');
+      return cart ? JSON.parse(cart) : [];
+    }
+
+    function saveCart(cart) {
+      localStorage.setItem('mel-cart', JSON.stringify(cart));
+    }
+
+    function updateQuantity(productId, change) {
+      const cart = getCart();
+      const item = cart.find(item => item.id === productId);
+      
+      if (item) {
+        item.quantity += change;
+        
+        if (item.quantity <= 0) {
+          removeFromCart(productId);
+        } else {
+          saveCart(cart);
+          renderCart();
+        }
+      }
+    }
+
+    function removeFromCart(productId) {
+      let cart = getCart();
+      cart = cart.filter(item => item.id !== productId);
+      saveCart(cart);
+      renderCart();
+    }
+
+    function calculateTotal() {
+      const cart = getCart();
+      return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    }
+
+    function renderCart() {
+      const cart = getCart();
+      const cartContent = document.getElementById('cart-content');
+
+      if (cart.length === 0) {
+        cartContent.innerHTML = `
+          <div class="cart-empty">
+            <p>Your cart is empty</p>
+            <a href="products.html">Continue Shopping</a>
+          </div>
+        `;
+        return;
+      }
+
+      const cartItemsHTML = cart.map(item => `
+        <div class="cart-item">
+          <div class="item-image">Product Image</div>
+          <div class="item-details">
+            <h3>${item.name}</h3>
+            <div class="item-price">$${item.price.toFixed(2)}</div>
+            <div class="quantity-controls">
+              <button class="quantity-btn" onclick="updateQuantity('${item.id}', -1)">−</button>
+              <span class="quantity">${item.quantity}</span>
+              <button class="quantity-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
+              <button class="remove-btn" onclick="removeFromCart('${item.id}')">Remove</button>
+            </div>
+          </div>
+          <div class="item-total">
+            $${(item.price * item.quantity).toFixed(2)}
+          </div>
+        </div>
+      `).join('');
+
+      const total = calculateTotal();
+
+      cartContent.innerHTML = `
+        <div class="cart-items">
+          ${cartItemsHTML}
+        </div>
+        <div class="cart-summary">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>$${total.toFixed(2)}</span>
+          </div>
+          <div class="summary-row">
+            <span>Shipping</span>
+            <span>Calculated at checkout</span>
+          </div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span>$${total.toFixed(2)} USD</span>
+          </div>
+          <button class="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
+          <a href="products.html" class="continue-shopping">Continue Shopping</a>
+        </div>
+      `;
+    }
+
+    function proceedToCheckout() {
+      // You would redirect to your checkout page here
+      // For now, we'll just redirect to the existing checkout page
+      window.location.href = 'index.html'; // or 'checkout.html'
+    }
+
+    // Make functions available globally
+    window.updateQuantity = updateQuantity;
+    window.removeFromCart = removeFromCart;
+    window.proceedToCheckout = proceedToCheckout;
+
+    // Render cart on page load
+    renderCart();
+  </script>
+
+</body>
+</html>
