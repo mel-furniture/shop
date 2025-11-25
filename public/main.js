@@ -1,46 +1,46 @@
-// main.js
-import { loadStripe } from "https://js.stripe.com/v3/";
+const stripe = Stripe('pk_live_51SVcSEAxCX5hk2YKsiojWL8rpBAiVAZpwMqnUSfQdJFlwtKEOo2JnblmbNvwAr1fUlyLAyXgNxvbBw6yO0pZTzuV00gYr1w8UI'); // Replace with your actual publishable key
 
-const stripe = Stripe("pk_live_51SVcSEAxCX5hk2YKsiojWL8rpBAiVAZpwMqnUSfQdJFlwtKEOo2JnblmbNvwAr1fUlyLAyXgNxvbBw6yO0pZTzuV00gYr1w8UI"); // Stripe publishable key
-const paymentForm = document.getElementById("payment-form");
-const cardElementDiv = document.getElementById("card-element");
-const paymentMessage = document.getElementById("payment-message");
-
-// Create a Stripe card element
 const elements = stripe.elements();
-const card = elements.create("card");
-card.mount(cardElementDiv);
+const cardElement = elements.create('card');
+cardElement.mount('#card-element');
 
-paymentForm.addEventListener("submit", async (e) => {
+const form = document.getElementById('payment-form');
+const messageDiv = document.getElementById('payment-message');
+
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
-  paymentMessage.textContent = "Processing payment…";
-
+  
+  messageDiv.textContent = 'Processing...';
+  
   try {
-    // Step 1: Call your backend to create a PaymentIntent
-    const response = await fetch("/functions/create-payment-intent", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: 60000 }) // amount in cents ($600)
+    // Call your Cloudflare Function
+    const response = await fetch('/functions/create-payment-intent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
-
+    
     const { clientSecret, error } = await response.json();
-
+    
     if (error) {
-      paymentMessage.textContent = `Error: ${error}`;
+      messageDiv.textContent = error;
       return;
     }
-
-    // Step 2: Confirm the card payment
-    const result = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: { card }
+    
+    // Confirm the payment
+    const { error: stripeError } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: cardElement,
+      },
     });
-
-    if (result.error) {
-      paymentMessage.textContent = `Payment failed: ${result.error.message}`;
-    } else if (result.paymentIntent && result.paymentIntent.status === "succeeded") {
-      paymentMessage.textContent = "Payment succeeded! Thank you for your order.";
+    
+    if (stripeError) {
+      messageDiv.textContent = stripeError.message;
+    } else {
+      messageDiv.textContent = 'Payment successful!';
     }
   } catch (err) {
-    paymentMessage.textContent = `Payment error: ${err.message}`;
+    messageDiv.textContent = 'Payment failed: ' + err.message;
   }
 });
