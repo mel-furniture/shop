@@ -372,7 +372,7 @@
 <body>
   
   <div id="overlayText2">
-    <a href="https://www.mel.furniture">MEL</a>
+    <a href="/">MEL</a>
   </div>
 
   <div class="container">
@@ -422,10 +422,10 @@
   <footer>
     <div class="footer-container">
       <div class="footer-links">
-        <a href="/information.html">Information</a>
-        <a href="/terms-and-conditions.html">Terms & Conditions</a>
+        <a href="information.html">Information</a>
+        <a href="terms-and-conditions.html">Terms & Conditions</a>
         <a href="https://www.instagram.com/mel_furniture" target="_blank">Instagram</a>
-        <a href="/downloads.html">Downloads</a>
+        <a href="downloads.html">Downloads</a>
       </div>
       <div>&copy; MEL Furniture LLC</div>
     </div>
@@ -451,7 +451,7 @@
         orderItems.innerHTML = `
           <div class="empty-cart">
             <p>Your cart is empty</p>
-            <a href="products.html">Browse Products</a>
+            <a href="/">Browse Products</a>
           </div>
         `;
         document.getElementById('payment-form').style.display = 'none';
@@ -495,8 +495,8 @@
       document.getElementById('submit-button').textContent = `Pay $${total.toFixed(2)}`;
     }
 
-    // Initialize Stripe
-    const stripe = Stripe('pk_live_51SVcSEAxCX5hk2YKsiojWL8rpBAiVAZpwMqnUSfQdJFlwtKEOo2JnblmbNvwAr1fUlyLAyXgNxvbBw6yO0pZTzuV00gYr1w8UI'); // Replace with your actual key
+    // Initialize Stripe - REPLACE WITH YOUR ACTUAL KEY
+    const stripe = Stripe('pk_live_51SVcSEAxCX5hk2YKsiojWL8rpBAiVAZpwMqnUSfQdJFlwtKEOo2JnblmbNvwAr1fUlyLAyXgNxvbBw6yO0pZTzuV00gYr1w8UI');
 
     const elements = stripe.elements();
     const cardElement = elements.create('card', {
@@ -568,6 +568,11 @@
         
         // Clear cart after successful payment
         localStorage.removeItem('mel-cart');
+        
+        // Optional: Redirect after success
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 3000);
         
       } catch (err) {
         messageDiv.textContent = err.message;
