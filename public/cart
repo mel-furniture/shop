@@ -404,7 +404,7 @@
         cartContent.innerHTML = `
           <div class="cart-empty">
             <p>Your cart is empty</p>
-            <a href="products.html">Continue Shopping</a>
+            <a href="index.html">Continue Shopping</a>
           </div>
         `;
         return;
@@ -449,15 +449,13 @@
             <span>$${total.toFixed(2)} USD</span>
           </div>
           <button class="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
-          <a href="products.html" class="continue-shopping">Continue Shopping</a>
+          <a href="index.html" class="continue-shopping">Continue Shopping</a>
         </div>
       `;
     }
 
     function proceedToCheckout() {
-      // You would redirect to your checkout page here
-      // For now, we'll just redirect to the existing checkout page
-      window.location.href = 'index.html'; // or 'checkout.html'
+      window.location.href = 'checkout.html';
     }
 
     // Make functions available globally
