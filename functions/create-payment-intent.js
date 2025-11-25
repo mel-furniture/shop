@@ -8,7 +8,7 @@ export async function onRequest(context) {
     const stripe = require('stripe')(context.env.STRIPE_SECRET_KEY);
     
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 60000, // $600.00 in cents
+      amount: 100, // $1.00 in cents
       currency: 'usd',
       automatic_payment_methods: {
         enabled: true,
@@ -31,3 +31,4 @@ export async function onRequest(context) {
     });
   }
 }
+
