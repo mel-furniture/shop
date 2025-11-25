@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Products | MEL</title>
+
+  <style>
+    /* ===== RESET ===== */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      background-color: #fff;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      font-family: sans-serif;
+      font-size: 1.125rem;
+      color: #000;
+      line-height: 1.35;
+    }
+
+    /* ===== MEL LOGO TOP LEFT ===== */
+    #overlayText2 {
+      position: fixed;
+      top: 2rem;
+      left: 2rem;
+      color: #000;
+      font-family: serif;
+      font-size: 1.125rem;
+      font-weight: bold;
+      letter-spacing: 0.075em;
+      z-index: 10;
+    }
+
+    #overlayText2 a {
+      color: #000;
+      text-decoration: none;
+    }
+
+    #overlayText2 a:hover {
+      color: #808080;
+    }
+
+    /* ===== CART BADGE ===== */
+    #cart-badge {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      z-index: 10;
+    }
+
+    #cart-badge a {
+      color: #000;
+      text-decoration: none;
+      font-family: sans-serif;
+      font-size: 1.125rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    #cart-badge a:hover {
+      color: #808080;
+    }
+
+    #cart-count {
+      background: #000;
+      color: #fff;
+      border-radius: 50%;
+      width: 1.5rem;
+      height: 1.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .container {
+      flex: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem 2rem;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #000;
+      margin-top: 0;
+      margin-bottom: 0;
+      padding-bottom: 0.5em;
+      line-height: 1.2;
+    }
+
+    /* ===== PRODUCTS GRID ===== */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2.5rem;
+      margin-top: 2rem;
+    }
+
+    .product-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .product-image {
+      width: 100%;
+      aspect-ratio: 1;
+      background: #F2F2F2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: #808080;
+    }
+
+    .product-info h3 {
+      font-size: 1.125rem;
+      font-weight: bold;
+      margin: 0 0 0.25rem 0;
+      color: #000;
+    }
+
+    .product-info p {
+      font-size: 1rem;
+      margin: 0 0 0.5rem 0;
+      color: #000;
+    }
+
+    .product-price {
+      font-size: 1.125rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    .add-to-cart-btn {
+      background: #000;
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: sans-serif;
+      width: 100%;
+    }
+
+    .add-to-cart-btn:hover {
+      background: #808080;
+    }
+
+    .add-to-cart-btn:disabled {
+      background: #808080;
+      cursor: not-allowed;
+    }
+
+    /* ===== NOTIFICATION ===== */
+    #notification {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #000;
+      color: #fff;
+      padding: 1rem 1.5rem;
+      font-size: 1rem;
+      z-index: 100;
+      opacity: 0;
+      transform: translateY(1rem);
+      transition: all 0.3s;
+      pointer-events: none;
+    }
+
+    #notification.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: #F2F2F2;
+      padding: 30px 20px;
+      text-align: left;
+      flex-shrink: 0;
+      margin: 0;
+      box-sizing: border-box;
+      color: #000;
+    }
+
+    footer .footer-container {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    footer .footer-links {
+      font-family: sans-serif;
+      font-size: 1.125rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+    }
+
+    footer .footer-links a {
+      color: #000;
+      text-decoration: none;
+      margin-left: 15px;
+      white-space: nowrap;
+    }
+
+    footer .footer-links a:first-child {
+      margin-left: 0;
+    }
+
+    footer .footer-links a:hover {
+      color: #808080;
+    }
+
+    footer .footer-links + div {
+      font-family: sans-serif;
+      font-size: 1.125rem;
+      color: #000;
+      margin-top: 0;
+    }
+
+    /* ===== MOBILE ===== */
+    @media (max-width: 768px) {
+      #overlayText2 {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+      }
+
+      #cart-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+      }
+
+      .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+
+      .products-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      footer .footer-container {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      footer .footer-links {
+        width: auto;
+        margin-bottom: 1rem;
+      }
+
+      footer .footer-links a {
+        margin-left: 0;
+        margin-right: 1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      footer .footer-links + div {
+        margin-top: 0;
+      }
+
+      #notification {
+        bottom: 1rem;
+        right: 1rem;
+        left: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <div id="overlayText2">
+    <a href="https://www.mel.furniture">MEL</a>
+  </div>
+
+  <div id="cart-badge">
+    <a href="cart.html">
+      Cart <span id="cart-count">0</span>
+    </a>
+  </div>
+
+  <div class="container">
+    <h1>Products</h1>
+
+    <div class="products-grid">
+      <!-- Product 1 -->
+      <div class="product-card">
+        <div class="product-image">Product Image</div>
+        <div class="product-info">
+          <h3>MEL Radius Table</h3>
+          <p>Handcrafted solid wood dining table with curved edges</p>
+          <div class="product-price">$600.00</div>
+          <button class="add-to-cart-btn" 
+                  data-id="radius-table"
+                  data-name="MEL Radius Table"
+                  data-price="600">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+
+      <!-- Product 2 -->
+      <div class="product-card">
+        <div class="product-image">Product Image</div>
+        <div class="product-info">
+          <h3>MEL Linear Bench</h3>
+          <p>Minimalist solid oak bench with clean lines</p>
+          <div class="product-price">$400.00</div>
+          <button class="add-to-cart-btn"
+                  data-id="linear-bench"
+                  data-name="MEL Linear Bench"
+                  data-price="400">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+
+      <!-- Product 3 -->
+      <div class="product-card">
+        <div class="product-image">Product Image</div>
+        <div class="product-info">
+          <h3>MEL Arc Chair</h3>
+          <p>Sculptural dining chair with ergonomic design</p>
+          <div class="product-price">$350.00</div>
+          <button class="add-to-cart-btn"
+                  data-id="arc-chair"
+                  data-name="MEL Arc Chair"
+                  data-price="350">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+
+      <!-- Product 4 -->
+      <div class="product-card">
+        <div class="product-image">Product Image</div>
+        <div class="product-info">
+          <h3>MEL Console Table</h3>
+          <p>Sleek hallway table in solid walnut</p>
+          <div class="product-price">$500.00</div>
+          <button class="add-to-cart-btn"
+                  data-id="console-table"
+                  data-name="MEL Console Table"
+                  data-price="500">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="notification"></div>
+
+  <footer>
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="/information.html">Information</a>
+        <a href="/terms-and-conditions.html">Terms & Conditions</a>
+        <a href="https://www.instagram.com/mel_furniture" target="_blank">Instagram</a>
+        <a href="/downloads.html">Downloads</a>
+      </div>
+      <div>&copy; MEL Furniture LLC</div>
+    </div>
+  </footer>
+
+  <script>
+    // Cart management
+    function getCart() {
+      const cart = localStorage.getItem('mel-cart');
+      return cart ? JSON.parse(cart) : [];
+    }
+
+    function saveCart(cart) {
+      localStorage.setItem('mel-cart', JSON.stringify(cart));
+      updateCartCount();
+    }
+
+    function updateCartCount() {
+      const cart = getCart();
+      const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById('cart-count').textContent = count;
+    }
+
+    function addToCart(product) {
+      const cart = getCart();
+      const existingItem = cart.find(item => item.id === product.id);
+
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        cart.push({ ...product, quantity: 1 });
+      }
+
+      saveCart(cart);
+      showNotification(`Added ${product.name} to cart`);
+    }
+
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.classList.add('show');
+
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 2000);
+    }
+
+    // Add event listeners to all add-to-cart buttons
+    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const product = {
+          id: button.dataset.id,
+          name: button.dataset.name,
+          price: parseFloat(button.dataset.price)
+        };
+        addToCart(product);
+      });
+    });
+
+    // Initialize cart count on page load
+    updateCartCount();
+  </script>
+
+</body>
+</html>
