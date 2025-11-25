@@ -1,7 +1,7 @@
 import { loadStripe } from '@stripe/stripe-js';
 
 // Use your **publishable key** here
-const stripe = await loadStripe('YOUR_PUBLISHABLE_KEY');
+const stripe = await loadStripe('pk_live_51SVcSEAxCX5hk2YKsiojWL8rpBAiVAZpwMqnUSfQdJFlwtKEOo2JnblmbNvwAr1fUlyLAyXgNxvbBw6yO0pZTzuV00gYr1w8UI');
 
 const paymentForm = document.getElementById('payment-form');
 const paymentMessage = document.getElementById('payment-message');
