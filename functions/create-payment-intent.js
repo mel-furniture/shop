@@ -1,23 +1,32 @@
 // functions/create-payment-intent.js
 
-import Stripe from "stripe";
-
 export async function onRequestPost({ request, env }) {
   try {
     const data = await request.json();
-    const amount = data.amount; // amount in cents
+    const amount = data.amount; // in cents
 
-    // Use Stripe secret key stored as a Cloudflare Pages Secret
-    const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-      apiVersion: "2023-08-16",
+    // Call Stripe API directly
+    const response = await fetch("https://api.stripe.com/v1/payment_intents", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.STRIPE_SECRET_KEY}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        amount: amount.toString(),
+        currency: "usd",
+        "automatic_payment_methods[enabled]": "true"
+      }),
     });
 
-    // Create PaymentIntent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount,
-      currency: "usd",
-      automatic_payment_methods: { enabled: true },
-    });
+    const paymentIntent = await response.json();
+
+    if (paymentIntent.error) {
+      return new Response(JSON.stringify({ error: paymentIntent.error.message }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
     return new Response(JSON.stringify({ clientSecret: paymentIntent.client_secret }), {
       headers: { "Content-Type": "application/json" },
@@ -25,8 +34,8 @@ export async function onRequestPost({ request, env }) {
 
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
-      headers: { "Content-Type": "application/json" },
       status: 500,
+      headers: { "Content-Type": "application/json" },
     });
   }
 }
