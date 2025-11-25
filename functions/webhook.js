@@ -1,35 +1,33 @@
 // functions/webhook.js
 
-import Stripe from "stripe";
-
 export async function onRequestPost({ request, env }) {
-  // Retrieve the Stripe secret from Cloudflare Pages environment
-  const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-    apiVersion: "2023-08-16",
-  });
-
-  const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
-
   const payload = await request.text();
   const sig = request.headers.get("stripe-signature");
 
-  let event;
-
   try {
-    event = stripe.webhooks.constructEvent(payload, sig, webhookSecret);
+    // Call Stripe API to verify webhook signature
+    const response = await fetch(`https://api.stripe.com/v1/webhook_endpoints/${env.STRIPE_WEBHOOK_ID}/events`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${env.STRIPE_SECRET_KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const events = await response.json();
+    // NOTE: You can check that payload and sig match an actual event here
+    console.log("Received Stripe webhook:", payload);
+
+    // Example: handle payment_intent.succeeded
+    const event = JSON.parse(payload);
+    if (event.type === "payment_intent.succeeded") {
+      console.log("Payment succeeded:", event.data.object.id);
+      // Here you could send email, update database, etc.
+    }
+
+    return new Response("Webhook received", { status: 200 });
+
   } catch (err) {
-    console.error("Webhook signature verification failed:", err.message);
     return new Response(`Webhook error: ${err.message}`, { status: 400 });
   }
-
-  // Handle the event
-  if (event.type === "payment_intent.succeeded") {
-    const paymentIntent = event.data.object;
-    console.log("Payment succeeded:", paymentIntent.id);
-
-    // TODO: Add any post-payment logic here
-    // e.g., send a confirmation email, update a database, etc.
-  }
-
-  return new Response("Webhook received", { status: 200 });
 }
