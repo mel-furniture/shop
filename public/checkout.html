@@ -50,8 +50,6 @@
     /* ===== MAIN CONTENT ===== */
     .container {
       flex: 1;
-      max-width: 960px;
-      margin: 0 auto;
       padding: 4rem 2rem 2rem;
       box-sizing: border-box;
     }
@@ -224,6 +222,18 @@
       border: 1px solid #000;
       background: #fff;
       box-sizing: border-box;
+      min-height: 40px;
+    }
+
+    #card-errors {
+      color: #c00;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Payment Request Button (Apple Pay, Google Pay, etc.) */
+    #payment-request-button {
+      margin-bottom: 1.5rem;
     }
 
     button[type="submit"] {
@@ -266,19 +276,6 @@
       background: #efe;
       border-color: #060;
       color: #060;
-    }
-
-    .secure-badge {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      color: #000;
-      margin-top: 1rem;
-    }
-
-    .secure-badge::before {
-      content: "🔒";
     }
 
     /* ===== FOOTER ===== */
@@ -404,14 +401,12 @@
 
           <div class="form-group">
             <label for="card-element">Card Information</label>
+            <div id="payment-request-button"></div>
             <div id="card-element"></div>
+            <div id="card-errors"></div>
           </div>
 
           <button type="submit" id="submit-button">Complete Purchase</button>
-
-          <div class="secure-badge">
-            Secure payment processing by Stripe
-          </div>
 
           <div id="payment-message"></div>
         </form>
@@ -496,9 +491,11 @@
     }
 
     // Initialize Stripe - REPLACE WITH YOUR ACTUAL KEY
-    const stripe = Stripe('pk_live_51SVcSEAxCX5hk2YKsiojWL8rpBAiVAZpwMqnUSfQdJFlwtKEOo2JnblmbNvwAr1fUlyLAyXgNxvbBw6yO0pZTzuV00gYr1w8UI');
+    const stripe = Stripe('pk_test_YOUR_PUBLISHABLE_KEY_HERE');
 
     const elements = stripe.elements();
+    
+    // Create card element
     const cardElement = elements.create('card', {
       style: {
         base: {
@@ -512,6 +509,81 @@
       },
     });
     cardElement.mount('#card-element');
+
+    // Display card errors
+    cardElement.on('change', (event) => {
+      const displayError = document.getElementById('card-errors');
+      if (event.error) {
+        displayError.textContent = event.error.message;
+      } else {
+        displayError.textContent = '';
+      }
+    });
+
+    // Create Payment Request Button (Apple Pay, Google Pay, etc.)
+    const cart = getCart();
+    const total = calculateTotal();
+    
+    const paymentRequest = stripe.paymentRequest({
+      country: 'US',
+      currency: 'usd',
+      total: {
+        label: 'Total',
+        amount: Math.round(total * 100), // Convert to cents
+      },
+      requestPayerName: true,
+      requestPayerEmail: true,
+    });
+
+    const prButton = elements.create('paymentRequestButton', {
+      paymentRequest: paymentRequest,
+    });
+
+    // Check if Payment Request is available (Apple Pay, Google Pay, etc.)
+    (async () => {
+      const result = await paymentRequest.canMakePayment();
+      if (result) {
+        prButton.mount('#payment-request-button');
+      }
+    })();
+
+    // Handle payment request submission
+    paymentRequest.on('paymentmethod', async (ev) => {
+      try {
+        const response = await fetch('/functions/create-payment-intent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ items: cart }),
+        });
+        
+        const { clientSecret, error } = await response.json();
+        
+        if (error) {
+          ev.complete('fail');
+          return;
+        }
+        
+        const { error: confirmError } = await stripe.confirmCardPayment(
+          clientSecret,
+          { payment_method: ev.paymentMethod.id },
+          { handleActions: false }
+        );
+
+        if (confirmError) {
+          ev.complete('fail');
+        } else {
+          ev.complete('success');
+          localStorage.removeItem('mel-cart');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        }
+      } catch (err) {
+        ev.complete('fail');
+      }
+    });
 
     const form = document.getElementById('payment-form');
     const submitButton = document.getElementById('submit-button');
