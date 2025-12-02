@@ -433,6 +433,12 @@
       return cart ? JSON.parse(cart) : [];
     }
 
+    // Redirect to home if cart is empty
+const initialCart = getCart();
+if (initialCart.length === 0) {
+  window.location.href = '/';
+}
+
     function calculateTotal() {
       const cart = getCart();
       return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -661,3 +667,4 @@
 
 </body>
 </html>
+
