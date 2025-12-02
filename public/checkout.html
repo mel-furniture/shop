@@ -4,49 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Checkout | MEL</title>
+  <link rel="stylesheet" href="shared.css">
   <script src="https://js.stripe.com/v3/"></script>
 
   <style>
-    /* ===== RESET ===== */
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      background-color: #fff;
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-      font-family: sans-serif;
-      font-size: 1.125rem;
-      color: #000;
-      line-height: 1.35;
-    }
-
-    /* ===== MEL LOGO TOP LEFT ===== */
-    #overlayText2 {
-      position: fixed;
-      top: 2rem;
-      left: 2rem;
-      color: #000;
-      font-family: serif;
-      font-size: 1.125rem;
-      font-weight: bold;
-      letter-spacing: 0.075em;
-      z-index: 10;
-    }
-
-    #overlayText2 a {
-      color: #000;
-      text-decoration: none;
-    }
-
-    #overlayText2 a:hover {
-      color: #808080;
-    }
-
     /* ===== MAIN CONTENT ===== */
     .container {
       flex: 1;
@@ -311,62 +272,8 @@
       color: #060;
     }
 
-    /* ===== FOOTER ===== */
-    footer {
-      background: #F2F2F2;
-      padding: 30px 20px;
-      text-align: left;
-      flex-shrink: 0;
-      margin: 0;
-      box-sizing: border-box;
-      color: #000;
-    }
-
-    footer .footer-container {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    footer .footer-links {
-      font-family: sans-serif;
-      font-size: 1.125rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0;
-    }
-
-    footer .footer-links a {
-      color: #000;
-      text-decoration: none;
-      margin-left: 15px;
-      white-space: nowrap;
-    }
-
-    footer .footer-links a:first-child {
-      margin-left: 0;
-    }
-
-    footer .footer-links a:hover {
-      color: #808080;
-    }
-
-    footer .footer-links + div {
-      font-family: sans-serif;
-      font-size: 1.125rem;
-      color: #000;
-      margin-top: 0;
-    }
-
     /* ===== MOBILE ===== */
     @media (max-width: 768px) {
-      #overlayText2 {
-        position: absolute;
-        top: 1rem;
-        left: 1rem;
-      }
-
       .container {
         padding-left: 1rem;
         padding-right: 1rem;
@@ -375,26 +282,6 @@
       .checkout-grid {
         grid-template-columns: 1fr;
         gap: 2rem;
-      }
-
-      footer .footer-container {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      footer .footer-links {
-        width: auto;
-        margin-bottom: 1rem;
-      }
-
-      footer .footer-links a {
-        margin-left: 0;
-        margin-right: 1rem;
-        margin-bottom: 0.5rem;
-      }
-
-      footer .footer-links + div {
-        margin-top: 0;
       }
     }
   </style>
