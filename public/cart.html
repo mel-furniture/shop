@@ -13,34 +13,20 @@
       box-sizing: border-box;
     }
 
-    /* ===== HEADER ===== */
-    .header {
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      padding: 2.5rem 3rem;
-    }
-
-    .shop-title {
-      font-size: 5rem;
-      font-weight: 300;
-      color: #000;
-      letter-spacing: -0.02em;
-    }
-
     /* ===== MAIN CONTENT ===== */
     .container {
       flex: 1;
-      padding: 0 3rem 3rem;
+      padding: 4rem 3rem 3rem;
       max-width: 1400px;
       width: 100%;
+      margin: 0 auto;
     }
 
-    .page-title {
-      font-size: 1.5rem;
-      font-weight: 300;
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
       color: #000;
-      margin-bottom: 3rem;
+      margin-bottom: 2rem;
     }
 
     .cart-layout {
@@ -86,8 +72,8 @@
     }
 
     .item-name {
-      font-size: 1.3rem;
-      font-weight: 300;
+      font-size: 1.125rem;
+      font-weight: bold;
       color: #000;
       margin-bottom: 0.5rem;
     }
@@ -133,15 +119,15 @@
     }
 
     .sidebar-title {
-      font-size: 1.3rem;
-      font-weight: 300;
+      font-size: 1.125rem;
+      font-weight: bold;
       color: #000;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
     }
 
     .subtotal-amount {
-      font-size: 2.5rem;
-      font-weight: 300;
+      font-size: 1.5rem;
+      font-weight: bold;
       color: #000;
       margin-bottom: 0.5rem;
     }
@@ -208,17 +194,9 @@
     }
 
     /* ===== MOBILE ===== */
-    @media (max-width: 968px) {
-      .header {
-        padding: 2rem 1.5rem;
-      }
-
-      .shop-title {
-        font-size: 3rem;
-      }
-
+    @media (max-width: 768px) {
       .container {
-        padding: 0 1.5rem 2rem;
+        padding: 4rem 1rem 2rem;
       }
 
       .cart-layout {
@@ -242,12 +220,6 @@
         padding-left: 0;
         padding-top: 2rem;
       }
-    }
-
-    @media (max-width: 600px) {
-      .shop-title {
-        font-size: 2rem;
-      }
 
       .cart-item {
         grid-template-columns: 1fr;
@@ -262,21 +234,31 @@
 </head>
 <body>
 
-  <!-- Header -->
-  <div class="header">
-    <div class="shop-title">Shop</div>
+  <div id="overlayText2">
+    <a href="/">MEL</a>
   </div>
 
-  <!-- Main Content -->
   <div class="container">
-    <h1 class="page-title">Basket Content</h1>
+    <h1>Shopping Cart</h1>
 
     <div id="cart-content">
       <!-- Cart items will be inserted here by JavaScript -->
     </div>
 
-    <a href="/" class="back-link">Back</a>
+    <a href="/" class="back-link">Continue Shopping</a>
   </div>
+
+  <footer>
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="information.html">Information</a>
+        <a href="terms-and-conditions.html">Terms & Conditions</a>
+        <a href="https://www.instagram.com/mel_furniture" target="_blank">Instagram</a>
+        <a href="downloads.html">Downloads</a>
+      </div>
+      <div>&copy; MEL Furniture LLC</div>
+    </div>
+  </footer>
 
   <script>
     // Cart management functions
