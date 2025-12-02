@@ -6,328 +6,356 @@
   <title>Cart | MEL</title>
 
   <style>
-    * {
+    /* ===== RESET ===== */
+    html, body {
+      height: 100%;
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-    }
-
-    html, body {
-      height: 100%;
       background-color: #fff;
     }
 
     body {
       display: flex;
       flex-direction: column;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      color: #333;
+      font-family: sans-serif;
+      font-size: 1.125rem;
+      color: #000;
+      line-height: 1.35;
     }
 
-    /* ===== HEADER ===== */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 2.5rem 3rem;
-    }
-
-    .shop-title {
-      font-size: 5rem;
-      font-weight: 300;
-      color: #c0c0c0;
-      letter-spacing: -0.02em;
-    }
-
-    .header-icons {
-      display: flex;
-      gap: 2rem;
-      align-items: center;
-    }
-
-    .search-icon {
-      width: 40px;
-      height: 40px;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23c0c0c0" stroke-width="2"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>');
-      background-size: contain;
-      cursor: pointer;
-    }
-
-    .cart-icon {
-      width: 50px;
-      height: 50px;
-      background-color: #c0c0c0;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
+    /* ===== MEL LOGO TOP LEFT ===== */
+    #overlayText2 {
+      position: fixed;
+      top: 2rem;
+      left: 2rem;
+      color: #000;
+      font-family: serif;
+      font-size: 1.125rem;
       font-weight: bold;
-      font-size: 1.2rem;
-      cursor: pointer;
-      position: relative;
+      letter-spacing: 0.075em;
+      z-index: 10;
+    }
+
+    #overlayText2 a {
+      color: #000;
+      text-decoration: none;
+    }
+
+    #overlayText2 a:hover {
+      color: #808080;
     }
 
     /* ===== MAIN CONTENT ===== */
     .container {
       flex: 1;
-      padding: 0 3rem 3rem;
-      max-width: 1400px;
-      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 4rem 2rem 2rem;
+      box-sizing: border-box;
     }
 
-    .page-title {
-      font-size: 1.5rem;
-      font-weight: 300;
-      color: #c0c0c0;
-      margin-bottom: 3rem;
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #000;
+      margin-top: 0;
+      margin-bottom: 0;
+      padding-bottom: 0.5em;
+      line-height: 1.2;
     }
 
-    .cart-layout {
-      display: grid;
-      grid-template-columns: 1fr 350px;
-      gap: 4rem;
-      margin-bottom: 2rem;
-    }
-
-    /* ===== CART ITEMS ===== */
-    .cart-items {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-    }
-
-    .cart-item {
-      display: grid;
-      grid-template-columns: 200px 1fr;
-      gap: 3rem;
-      align-items: start;
-    }
-
-    .item-image {
-      width: 200px;
-      height: 200px;
-      background-color: #f5f5f5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .item-image img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-
-    .item-details {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .item-name {
-      font-size: 1.3rem;
-      font-weight: 300;
-      color: #c0c0c0;
-      margin-bottom: 0.5rem;
-    }
-
-    .item-controls {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .quantity-input {
-      width: 60px;
-      padding: 0.5rem;
-      border: 1px solid #c0c0c0;
-      text-align: center;
-      font-size: 1rem;
-    }
-
-    .price-text {
-      color: #c0c0c0;
-      font-size: 1rem;
-    }
-
-    .update-btn {
-      background-color: #c0c0c0;
-      color: white;
-      border: none;
-      padding: 0.6rem 1.5rem;
-      cursor: pointer;
-      font-size: 1rem;
-      border-radius: 2px;
-    }
-
-    .update-btn:hover {
-      background-color: #a0a0a0;
-    }
-
-    /* ===== SIDEBAR ===== */
-    .cart-sidebar {
-      border-left: 1px solid #e0e0e0;
-      padding-left: 2rem;
-    }
-
-    .sidebar-title {
-      font-size: 1.3rem;
-      font-weight: 300;
-      color: #c0c0c0;
-      margin-bottom: 1.5rem;
-    }
-
-    .subtotal-amount {
-      font-size: 2.5rem;
-      font-weight: 300;
-      color: #c0c0c0;
-      margin-bottom: 0.5rem;
-    }
-
-    .shipping-note {
-      font-size: 0.9rem;
-      color: #c0c0c0;
-      font-style: italic;
-      margin-bottom: 2rem;
-    }
-
-    .checkout-btn {
-      background-color: #c0c0c0;
-      color: white;
-      border: none;
-      padding: 0.8rem 2rem;
-      cursor: pointer;
-      font-size: 1rem;
-      width: 100%;
-      margin-bottom: 1.5rem;
-      border-radius: 2px;
-    }
-
-    .checkout-btn:hover {
-      background-color: #a0a0a0;
-    }
-
-    .vat-notice {
-      font-size: 0.85rem;
-      color: #c0c0c0;
-      font-style: italic;
-      line-height: 1.5;
-    }
-
-    /* ===== BACK LINK ===== */
-    .back-link {
-      color: #c0c0c0;
-      text-decoration: none;
-      font-size: 1rem;
-      display: inline-block;
-      margin-top: 2rem;
-    }
-
-    .back-link:hover {
-      color: #808080;
-    }
-
-    /* ===== EMPTY CART ===== */
+    /* ===== CART ===== */
     .cart-empty {
       padding: 3rem 0;
       text-align: center;
-      color: #c0c0c0;
     }
 
     .cart-empty p {
       margin-bottom: 2rem;
-      font-size: 1.2rem;
+      color: #808080;
     }
 
     .cart-empty a {
-      background: #c0c0c0;
+      background: #000;
       color: #fff;
       padding: 0.75rem 1.5rem;
       text-decoration: none;
+      font-weight: bold;
       display: inline-block;
-      border-radius: 2px;
+      transition: background 0.2s;
     }
 
     .cart-empty a:hover {
-      background: #a0a0a0;
+      background: #808080;
+    }
+
+    .cart-items {
+      margin-top: 2rem;
+    }
+
+    .cart-item {
+      display: grid;
+      grid-template-columns: 100px 1fr auto;
+      gap: 1.5rem;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid #F2F2F2;
+    }
+
+    .cart-item:first-child {
+      border-top: 1px solid #F2F2F2;
+    }
+
+    .item-image {
+      width: 100px;
+      height: 100px;
+      background: #F2F2F2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: #808080;
+    }
+
+    .item-details h3 {
+      font-size: 1.125rem;
+      font-weight: bold;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .item-price {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .quantity-btn {
+      background: #F2F2F2;
+      border: 1px solid #000;
+      width: 2rem;
+      height: 2rem;
+      font-size: 1.125rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .quantity-btn:hover {
+      background: #000;
+      color: #fff;
+    }
+
+    .quantity {
+      font-weight: bold;
+      min-width: 2rem;
+      text-align: center;
+    }
+
+    .remove-btn {
+      background: none;
+      border: none;
+      color: #808080;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 0.9rem;
+      padding: 0;
+      font-family: sans-serif;
+    }
+
+    .remove-btn:hover {
+      color: #000;
+    }
+
+    .item-total {
+      text-align: right;
+      font-weight: bold;
+      font-size: 1.125rem;
+    }
+
+    /* ===== CART SUMMARY ===== */
+    .cart-summary {
+      margin-top: 2rem;
+      padding: 2rem;
+      background: #F2F2F2;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      font-size: 1.125rem;
+    }
+
+    .summary-row.total {
+      font-weight: bold;
+      font-size: 1.25rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #000;
+    }
+
+    .checkout-btn {
+      background: #000;
+      color: #fff;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.125rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: sans-serif;
+      width: 100%;
+      margin-top: 1.5rem;
+    }
+
+    .checkout-btn:hover {
+      background: #808080;
+    }
+
+    .continue-shopping {
+      display: block;
+      text-align: center;
+      margin-top: 1.5rem;
+      color: #000;
+      text-decoration: underline;
+    }
+
+    .continue-shopping:hover {
+      color: #808080;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: #F2F2F2;
+      padding: 30px 20px;
+      text-align: left;
+      flex-shrink: 0;
+      margin: 0;
+      box-sizing: border-box;
+      color: #000;
+    }
+
+    footer .footer-container {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    footer .footer-links {
+      font-family: sans-serif;
+      font-size: 1.125rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+    }
+
+    footer .footer-links a {
+      color: #000;
+      text-decoration: none;
+      margin-left: 15px;
+      white-space: nowrap;
+    }
+
+    footer .footer-links a:first-child {
+      margin-left: 0;
+    }
+
+    footer .footer-links a:hover {
+      color: #808080;
+    }
+
+    footer .footer-links + div {
+      font-family: sans-serif;
+      font-size: 1.125rem;
+      color: #000;
+      margin-top: 0;
     }
 
     /* ===== MOBILE ===== */
-    @media (max-width: 968px) {
-      .header {
-        padding: 2rem 1.5rem;
-      }
-
-      .shop-title {
-        font-size: 3rem;
+    @media (max-width: 768px) {
+      #overlayText2 {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
       }
 
       .container {
-        padding: 0 1.5rem 2rem;
-      }
-
-      .cart-layout {
-        grid-template-columns: 1fr;
-        gap: 2rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
       }
 
       .cart-item {
-        grid-template-columns: 150px 1fr;
-        gap: 1.5rem;
+        grid-template-columns: 80px 1fr;
+        gap: 1rem;
       }
 
       .item-image {
-        width: 150px;
-        height: 150px;
+        width: 80px;
+        height: 80px;
       }
 
-      .cart-sidebar {
-        border-left: none;
-        border-top: 1px solid #e0e0e0;
-        padding-left: 0;
-        padding-top: 2rem;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .shop-title {
-        font-size: 2rem;
+      .item-total {
+        grid-column: 2;
+        text-align: left;
+        margin-top: 0.5rem;
       }
 
-      .cart-item {
-        grid-template-columns: 1fr;
+      footer .footer-container {
+        flex-direction: column;
+        align-items: flex-start;
       }
 
-      .item-image {
-        width: 100%;
-        max-width: 200px;
+      footer .footer-links {
+        width: auto;
+        margin-bottom: 1rem;
+      }
+
+      footer .footer-links a {
+        margin-left: 0;
+        margin-right: 1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      footer .footer-links + div {
+        margin-top: 0;
       }
     }
   </style>
 </head>
 <body>
-
-  <!-- Header -->
-  <div class="header">
-    <div class="shop-title">Shop</div>
-    <div class="header-icons">
-      <div class="search-icon"></div>
-      <div class="cart-icon" id="cart-count">0</div>
-    </div>
+  
+  <div id="overlayText2">
+    <a href="/">MEL</a>
   </div>
 
-  <!-- Main Content -->
   <div class="container">
-    <h1 class="page-title">Basket Content</h1>
+    <h1>Shopping Cart</h1>
 
     <div id="cart-content">
       <!-- Cart items will be inserted here by JavaScript -->
     </div>
-
-    <a href="/" class="back-link">Back</a>
   </div>
+
+  <footer>
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="information.html">Information</a>
+        <a href="terms-and-conditions.html">Terms & Conditions</a>
+        <a href="https://www.instagram.com/mel_furniture" target="_blank">Instagram</a>
+        <a href="downloads.html">Downloads</a>
+      </div>
+      <div>&copy; MEL Furniture LLC</div>
+    </div>
+  </footer>
 
   <script>
     // Cart management functions
@@ -338,27 +366,18 @@
 
     function saveCart(cart) {
       localStorage.setItem('mel-cart', JSON.stringify(cart));
-      updateCartCount();
     }
 
-    function updateCartCount() {
-      const cart = getCart();
-      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-      document.getElementById('cart-count').textContent = totalItems;
-    }
-
-    function updateQuantity(productId) {
-      const input = document.getElementById(`qty-${productId}`);
-      const newQuantity = parseInt(input.value) || 1;
-
+    function updateQuantity(productId, change) {
       const cart = getCart();
       const item = cart.find(item => item.id === productId);
-
+      
       if (item) {
-        if (newQuantity <= 0) {
+        item.quantity += change;
+        
+        if (item.quantity <= 0) {
           removeFromCart(productId);
         } else {
-          item.quantity = newQuantity;
           saveCart(cart);
           renderCart();
         }
@@ -391,44 +410,46 @@
         return;
       }
 
-      const total = calculateTotal();
-
       const cartItemsHTML = cart.map(item => `
         <div class="cart-item">
-          <div class="item-image">
-            ${item.image ? `<img src="${item.image}" alt="${item.name}">` : ''}
-          </div>
+          <div class="item-image">Product Image</div>
           <div class="item-details">
-            <div class="item-name">${item.name}</div>
-            <div class="item-controls">
-              <input
-                type="number"
-                id="qty-${item.id}"
-                class="quantity-input"
-                value="${item.quantity}"
-                min="1"
-              />
-              <span class="price-text">x £${item.price.toFixed(2)}</span>
-              <button class="update-btn" onclick="updateQuantity('${item.id}')">Update</button>
+            <h3>${item.name}</h3>
+            <div class="item-price">$${item.price.toFixed(2)}</div>
+            <div class="quantity-controls">
+              <button class="quantity-btn" onclick="updateQuantity('${item.id}', -1)">−</button>
+              <span class="quantity">${item.quantity}</span>
+              <button class="quantity-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
+              <button class="remove-btn" onclick="removeFromCart('${item.id}')">Remove</button>
             </div>
+          </div>
+          <div class="item-total">
+            $${(item.price * item.quantity).toFixed(2)}
           </div>
         </div>
       `).join('');
 
+      const total = calculateTotal();
+
       cartContent.innerHTML = `
-        <div class="cart-layout">
-          <div class="cart-items">
-            ${cartItemsHTML}
+        <div class="cart-items">
+          ${cartItemsHTML}
+        </div>
+        <div class="cart-summary">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>$${total.toFixed(2)}</span>
           </div>
-          <div class="cart-sidebar">
-            <div class="sidebar-title">Subtotal</div>
-            <div class="subtotal-amount">£${total.toFixed(2)}</div>
-            <div class="shipping-note">Not including shipping</div>
-            <button class="checkout-btn" onclick="proceedToCheckout()">Checkout</button>
-            <div class="vat-notice">
-              Due to Brexit, orders to the EU are now liable to a VAT charge upon arrival. We apologise for this.
-            </div>
+          <div class="summary-row">
+            <span>Shipping</span>
+            <span>Calculated at checkout</span>
           </div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span>$${total.toFixed(2)} USD</span>
+          </div>
+          <button class="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
+          <a href="/" class="continue-shopping">Continue Shopping</a>
         </div>
       `;
     }
@@ -443,7 +464,6 @@
     window.proceedToCheckout = proceedToCheckout;
 
     // Render cart on page load
-    updateCartCount();
     renderCart();
   </script>
 
