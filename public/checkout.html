@@ -217,6 +217,39 @@
       border-color: #000;
     }
 
+    /* Express Checkout Buttons */
+    .express-checkout {
+      margin-bottom: 1.5rem;
+    }
+
+    #payment-request-button {
+      margin-bottom: 1rem;
+    }
+
+    .or-divider {
+      text-align: center;
+      margin: 1.5rem 0;
+      position: relative;
+    }
+
+    .or-divider::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      background: #d0d0d0;
+    }
+
+    .or-divider span {
+      background: #fff;
+      padding: 0 1rem;
+      position: relative;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
     #card-element {
       padding: 0.75rem;
       border: 1px solid #000;
@@ -231,9 +264,45 @@
       margin-top: 0.5rem;
     }
 
-    /* Payment Request Button (Apple Pay, Google Pay, etc.) */
-    #payment-request-button {
-      margin-bottom: 1.5rem;
+    /* Accepted Cards Display */
+    .accepted-cards {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .card-logos {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .card-logo {
+      width: 32px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: bold;
+      border: 1px solid #d0d0d0;
+      border-radius: 2px;
+      background: #fff;
+      opacity: 0;
+      animation: fadeInOut 8s infinite;
+    }
+
+    .card-logo:nth-child(1) { animation-delay: 0s; }
+    .card-logo:nth-child(2) { animation-delay: 2s; }
+    .card-logo:nth-child(3) { animation-delay: 4s; }
+    .card-logo:nth-child(4) { animation-delay: 6s; }
+
+    @keyframes fadeInOut {
+      0%, 20% { opacity: 1; }
+      25%, 100% { opacity: 0; }
     }
 
     button[type="submit"] {
@@ -389,6 +458,15 @@
         <h2>Payment Details</h2>
         
         <form id="payment-form">
+          <!-- Express Checkout Options -->
+          <div class="express-checkout">
+            <div id="payment-request-button"></div>
+          </div>
+
+          <div class="or-divider" id="divider" style="display: none;">
+            <span>Or pay with card</span>
+          </div>
+
           <div class="form-group">
             <label for="email">Email</label>
             <input type="email" id="email" required placeholder="[email protected]">
@@ -401,9 +479,17 @@
 
           <div class="form-group">
             <label for="card-element">Card Information</label>
-            <div id="payment-request-button"></div>
             <div id="card-element"></div>
             <div id="card-errors"></div>
+            <div class="accepted-cards">
+              <span>Accepted:</span>
+              <div class="card-logos">
+                <div class="card-logo">VISA</div>
+                <div class="card-logo">MC</div>
+                <div class="card-logo">AMEX</div>
+                <div class="card-logo">DISC</div>
+              </div>
+            </div>
           </div>
 
           <button type="submit" id="submit-button">Complete Purchase</button>
@@ -434,10 +520,10 @@
     }
 
     // Redirect to home if cart is empty
-const initialCart = getCart();
-if (initialCart.length === 0) {
-  window.location.href = '/';
-}
+    const initialCart = getCart();
+    if (initialCart.length === 0) {
+      window.location.href = '/';
+    }
 
     function calculateTotal() {
       const cart = getCart();
@@ -526,7 +612,7 @@ if (initialCart.length === 0) {
       }
     });
 
-    // Create Payment Request Button (Apple Pay, Google Pay, etc.)
+    // Create Payment Request Button (Apple Pay, Google Pay, Link)
     const cart = getCart();
     const total = calculateTotal();
     
@@ -535,7 +621,7 @@ if (initialCart.length === 0) {
       currency: 'usd',
       total: {
         label: 'Total',
-        amount: Math.round(total * 100), // Convert to cents
+        amount: Math.round(total * 100),
       },
       requestPayerName: true,
       requestPayerEmail: true,
@@ -543,17 +629,25 @@ if (initialCart.length === 0) {
 
     const prButton = elements.create('paymentRequestButton', {
       paymentRequest: paymentRequest,
+      style: {
+        paymentRequestButton: {
+          type: 'default',
+          theme: 'dark',
+          height: '48px',
+        },
+      },
     });
 
-    // Check if Payment Request is available (Apple Pay, Google Pay, etc.)
+    // Check availability and mount
     (async () => {
       const result = await paymentRequest.canMakePayment();
       if (result) {
         prButton.mount('#payment-request-button');
+        document.getElementById('divider').style.display = 'block';
       }
     })();
 
-    // Handle payment request submission
+    // Handle express checkout
     paymentRequest.on('paymentmethod', async (ev) => {
       try {
         const response = await fetch('/functions/create-payment-intent', {
@@ -611,7 +705,6 @@ if (initialCart.length === 0) {
       messageDiv.className = 'processing';
       
       try {
-        // Send cart to your serverless function
         const response = await fetch('/functions/create-payment-intent', {
           method: 'POST',
           headers: {
@@ -644,10 +737,8 @@ if (initialCart.length === 0) {
         messageDiv.className = 'success';
         submitButton.textContent = 'Payment Complete';
         
-        // Clear cart after successful payment
         localStorage.removeItem('mel-cart');
         
-        // Optional: Redirect after success
         setTimeout(() => {
           window.location.href = '/';
         }, 3000);
@@ -667,4 +758,3 @@ if (initialCart.length === 0) {
 
 </body>
 </html>
-
