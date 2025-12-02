@@ -461,6 +461,7 @@
           <!-- Express Checkout Options -->
           <div class="express-checkout">
             <div id="payment-request-button"></div>
+            <div id="link-button" style="margin-top: 1rem;"></div>
           </div>
 
           <div class="or-divider" id="divider" style="display: none;">
@@ -583,7 +584,7 @@
     }
 
     // Initialize Stripe - REPLACE WITH YOUR ACTUAL KEY
-    const stripe = Stripe('pk_live_51SVcSEAxCX5hk2YKsiojWL8rpBAiVAZpwMqnUSfQdJFlwtKEOo2JnblmbNvwAr1fUlyLAyXgNxvbBw6yO0pZTzuV00gYr1w8UI');
+    const stripe = Stripe('pk_test_YOUR_PUBLISHABLE_KEY_HERE');
 
     const elements = stripe.elements();
     
@@ -641,11 +642,20 @@
     // Check availability and mount
     (async () => {
       const result = await paymentRequest.canMakePayment();
-      if (result) {
+      if (result && (result.applePay || result.googlePay)) {
         prButton.mount('#payment-request-button');
         document.getElementById('divider').style.display = 'block';
       }
     })();
+
+    // Create separate Link button
+    const linkAuthenticationElement = elements.create('linkAuthentication');
+    linkAuthenticationElement.mount('#link-button');
+    
+    // Show divider if either express option is available
+    linkAuthenticationElement.on('loaderstart', () => {
+      document.getElementById('divider').style.display = 'block';
+    });
 
     // Handle express checkout
     paymentRequest.on('paymentmethod', async (ev) => {
@@ -758,4 +768,3 @@
 
 </body>
 </html>
-
