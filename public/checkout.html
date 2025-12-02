@@ -591,12 +591,37 @@
     // Handle express checkout
     paymentRequest.on('paymentmethod', async (ev) => {
       try {
+        // Get delivery method (default to ship for express checkout)
+        const deliveryMethodInput = document.querySelector('input[name="delivery"]:checked');
+        const deliveryMethod = deliveryMethodInput ? deliveryMethodInput.value : 'ship';
+
+        // Collect shipping address if shipping
+        let shippingAddress = null;
+        if (deliveryMethod === 'ship') {
+          // For express checkout, try to get address from form if filled
+          const addressValue = document.getElementById('address').value;
+          if (addressValue) {
+            shippingAddress = {
+              address: addressValue,
+              address2: document.getElementById('address2').value,
+              city: document.getElementById('city').value,
+              state: document.getElementById('state').value,
+              zip: document.getElementById('zip').value,
+              country: document.getElementById('country').value,
+            };
+          }
+        }
+
         const response = await fetch('/functions/create-payment-intent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ items: cart }),
+          body: JSON.stringify({
+            items: cart,
+            shippingAddress: shippingAddress,
+            deliveryMethod: deliveryMethod,
+          }),
         });
         
         const { clientSecret, error } = await response.json();
@@ -632,7 +657,7 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       const cart = getCart();
       if (cart.length === 0) {
         messageDiv.style.display = 'block';
@@ -646,14 +671,34 @@
       messageDiv.style.display = 'block';
       messageDiv.textContent = 'Processing your payment...';
       messageDiv.className = 'processing';
-      
+
       try {
+        // Get delivery method
+        const deliveryMethod = document.querySelector('input[name="delivery"]:checked').value;
+
+        // Collect shipping address if shipping
+        let shippingAddress = null;
+        if (deliveryMethod === 'ship') {
+          shippingAddress = {
+            address: document.getElementById('address').value,
+            address2: document.getElementById('address2').value,
+            city: document.getElementById('city').value,
+            state: document.getElementById('state').value,
+            zip: document.getElementById('zip').value,
+            country: document.getElementById('country').value,
+          };
+        }
+
         const response = await fetch('/functions/create-payment-intent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ items: cart }),
+          body: JSON.stringify({
+            items: cart,
+            shippingAddress: shippingAddress,
+            deliveryMethod: deliveryMethod,
+          }),
         });
         
         const { clientSecret, error } = await response.json();
