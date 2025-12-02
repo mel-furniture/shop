@@ -20,14 +20,14 @@
     body {
       display: flex;
       flex-direction: column;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      color: #333;
+      font-family: sans-serif;
+      color: #000;
     }
 
     /* ===== HEADER ===== */
     .header {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
       padding: 2.5rem 3rem;
     }
@@ -35,37 +35,8 @@
     .shop-title {
       font-size: 5rem;
       font-weight: 300;
-      color: #c0c0c0;
+      color: #000;
       letter-spacing: -0.02em;
-    }
-
-    .header-icons {
-      display: flex;
-      gap: 2rem;
-      align-items: center;
-    }
-
-    .search-icon {
-      width: 40px;
-      height: 40px;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23c0c0c0" stroke-width="2"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>');
-      background-size: contain;
-      cursor: pointer;
-    }
-
-    .cart-icon {
-      width: 50px;
-      height: 50px;
-      background-color: #c0c0c0;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 1.2rem;
-      cursor: pointer;
-      position: relative;
     }
 
     /* ===== MAIN CONTENT ===== */
@@ -79,7 +50,7 @@
     .page-title {
       font-size: 1.5rem;
       font-weight: 300;
-      color: #c0c0c0;
+      color: #000;
       margin-bottom: 3rem;
     }
 
@@ -128,7 +99,7 @@
     .item-name {
       font-size: 1.3rem;
       font-weight: 300;
-      color: #c0c0c0;
+      color: #000;
       margin-bottom: 0.5rem;
     }
 
@@ -142,18 +113,18 @@
     .quantity-input {
       width: 60px;
       padding: 0.5rem;
-      border: 1px solid #c0c0c0;
+      border: 1px solid #000;
       text-align: center;
       font-size: 1rem;
     }
 
     .price-text {
-      color: #c0c0c0;
+      color: #000;
       font-size: 1rem;
     }
 
     .update-btn {
-      background-color: #c0c0c0;
+      background-color: #000;
       color: white;
       border: none;
       padding: 0.6rem 1.5rem;
@@ -163,38 +134,38 @@
     }
 
     .update-btn:hover {
-      background-color: #a0a0a0;
+      background-color: #808080;
     }
 
     /* ===== SIDEBAR ===== */
     .cart-sidebar {
-      border-left: 1px solid #e0e0e0;
+      border-left: 1px solid #000;
       padding-left: 2rem;
     }
 
     .sidebar-title {
       font-size: 1.3rem;
       font-weight: 300;
-      color: #c0c0c0;
+      color: #000;
       margin-bottom: 1.5rem;
     }
 
     .subtotal-amount {
       font-size: 2.5rem;
       font-weight: 300;
-      color: #c0c0c0;
+      color: #000;
       margin-bottom: 0.5rem;
     }
 
     .shipping-note {
       font-size: 0.9rem;
-      color: #c0c0c0;
+      color: #000;
       font-style: italic;
       margin-bottom: 2rem;
     }
 
     .checkout-btn {
-      background-color: #c0c0c0;
+      background-color: #000;
       color: white;
       border: none;
       padding: 0.8rem 2rem;
@@ -206,19 +177,12 @@
     }
 
     .checkout-btn:hover {
-      background-color: #a0a0a0;
-    }
-
-    .vat-notice {
-      font-size: 0.85rem;
-      color: #c0c0c0;
-      font-style: italic;
-      line-height: 1.5;
+      background-color: #808080;
     }
 
     /* ===== BACK LINK ===== */
     .back-link {
-      color: #c0c0c0;
+      color: #000;
       text-decoration: none;
       font-size: 1rem;
       display: inline-block;
@@ -233,7 +197,7 @@
     .cart-empty {
       padding: 3rem 0;
       text-align: center;
-      color: #c0c0c0;
+      color: #000;
     }
 
     .cart-empty p {
@@ -242,7 +206,7 @@
     }
 
     .cart-empty a {
-      background: #c0c0c0;
+      background: #000;
       color: #fff;
       padding: 0.75rem 1.5rem;
       text-decoration: none;
@@ -251,7 +215,7 @@
     }
 
     .cart-empty a:hover {
-      background: #a0a0a0;
+      background: #808080;
     }
 
     /* ===== MOBILE ===== */
@@ -285,7 +249,7 @@
 
       .cart-sidebar {
         border-left: none;
-        border-top: 1px solid #e0e0e0;
+        border-top: 1px solid #000;
         padding-left: 0;
         padding-top: 2rem;
       }
@@ -312,10 +276,6 @@
   <!-- Header -->
   <div class="header">
     <div class="shop-title">Shop</div>
-    <div class="header-icons">
-      <div class="search-icon"></div>
-      <div class="cart-icon" id="cart-count">0</div>
-    </div>
   </div>
 
   <!-- Main Content -->
@@ -338,13 +298,6 @@
 
     function saveCart(cart) {
       localStorage.setItem('mel-cart', JSON.stringify(cart));
-      updateCartCount();
-    }
-
-    function updateCartCount() {
-      const cart = getCart();
-      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-      document.getElementById('cart-count').textContent = totalItems;
     }
 
     function updateQuantity(productId) {
@@ -408,7 +361,7 @@
                 value="${item.quantity}"
                 min="1"
               />
-              <span class="price-text">x £${item.price.toFixed(2)}</span>
+              <span class="price-text">x $${item.price.toFixed(2)}</span>
               <button class="update-btn" onclick="updateQuantity('${item.id}')">Update</button>
             </div>
           </div>
@@ -422,12 +375,9 @@
           </div>
           <div class="cart-sidebar">
             <div class="sidebar-title">Subtotal</div>
-            <div class="subtotal-amount">£${total.toFixed(2)}</div>
+            <div class="subtotal-amount">$${total.toFixed(2)}</div>
             <div class="shipping-note">Not including shipping</div>
             <button class="checkout-btn" onclick="proceedToCheckout()">Checkout</button>
-            <div class="vat-notice">
-              Due to Brexit, orders to the EU are now liable to a VAT charge upon arrival. We apologise for this.
-            </div>
           </div>
         </div>
       `;
@@ -443,7 +393,6 @@
     window.proceedToCheckout = proceedToCheckout;
 
     // Render cart on page load
-    updateCartCount();
     renderCart();
   </script>
 
