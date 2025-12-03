@@ -1043,17 +1043,9 @@
     const deliveryRadios = document.querySelectorAll('input[name="delivery"]');
     const shippingFields = document.getElementById('shipping-fields');
 
-    // All shipping fields for required validation
+    // All shipping fields (all should trigger tax recalculation)
     const shippingInputs = [
       document.getElementById('ship-name'),
-      document.getElementById('address'),
-      document.getElementById('city'),
-      document.getElementById('state'),
-      document.getElementById('zip'),
-    ];
-
-    // Only address fields trigger tax calculation (name not needed)
-    const taxCalculationInputs = [
       document.getElementById('address'),
       document.getElementById('city'),
       document.getElementById('state'),
@@ -1081,7 +1073,8 @@
       });
     });
 
-    // Add event listeners to address fields for auto-calculation (not name)
+    // Add event listeners to all shipping fields for auto-calculation
+    // Any change to any field should trigger recalculation (prevents tax evasion)
     let calculateTimeout = null;
 
     function scheduleCalculation() {
@@ -1096,8 +1089,9 @@
       }, 1000);
     }
 
-    // Add listeners to address fields (name not needed for tax calculation)
-    taxCalculationInputs.forEach(input => {
+    // Add listeners to ALL shipping fields (including name)
+    // This ensures tax recalculates when ANY field changes, preventing tax evasion
+    shippingInputs.forEach(input => {
       input.addEventListener('input', scheduleCalculation);
       input.addEventListener('blur', () => {
         // Also calculate immediately when field loses focus
