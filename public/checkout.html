@@ -528,7 +528,7 @@
 
         console.log('Calculating order total with address:', shippingAddress);
 
-        const response = await fetch('/functions/create-payment-intent', {
+        const response = await fetch('/create-payment-intent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -762,7 +762,7 @@
           }
         }
 
-        const response = await fetch('/functions/create-payment-intent', {
+        const response = await fetch('/create-payment-intent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -841,7 +841,7 @@
             };
           }
 
-          const response = await fetch('/functions/create-payment-intent', {
+          const response = await fetch('/create-payment-intent', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
