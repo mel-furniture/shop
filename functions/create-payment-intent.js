@@ -171,7 +171,7 @@ export async function onRequest(context) {
         if (shippingAmount > 0) {
           lineItems.push({
             amount: shippingAmount,
-            reference: 'shipping',
+            reference: 'shipping_fee',
             tax_code: 'txcd_92010001', // Shipping tax code
           });
         }
