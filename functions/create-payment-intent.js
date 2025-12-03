@@ -34,6 +34,10 @@ export async function onRequest(context) {
   }
 
   try {
+    // Debug: Check if API key is available
+    console.log('STRIPE_SECRET_KEY exists:', !!context.env.STRIPE_SECRET_KEY);
+    console.log('Key starts with:', context.env.STRIPE_SECRET_KEY?.substring(0, 7));
+
     const stripe = require('stripe')(context.env.STRIPE_SECRET_KEY);
 
     // Get data from request body
