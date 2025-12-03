@@ -418,13 +418,13 @@
               </div>
               <div class="form-group">
                 <label for="state">State</label>
-                <input type="text" id="state" required placeholder="MN" maxlength="2">
+                <input type="text" id="state" required placeholder="MN" maxlength="2" pattern="[A-Z]{2}" title="Two-letter state code (e.g., MN, NY, CA)">
               </div>
             </div>
             <div class="address-row">
               <div class="form-group">
                 <label for="zip">ZIP Code</label>
-                <input type="text" id="zip" required placeholder="55401">
+                <input type="text" id="zip" required placeholder="55401" pattern="[0-9]{5}(-[0-9]{4})?" title="5-digit ZIP code (e.g., 55401)">
               </div>
               <div class="form-group">
                 <label for="country">Country</label>
@@ -484,6 +484,9 @@
     let expressCheckoutClientSecret = null;
     let expressCheckoutShippingAddress = null;
 
+    // Track previous payment intent to cancel when creating new one
+    let previousPaymentIntentId = null;
+
     // Calculate totals with shipping and tax
     async function calculateOrderTotal() {
       const cart = getCart();
@@ -499,8 +502,20 @@
       // Check if all required address fields are filled (name not needed for tax calc)
       const address = document.getElementById('address').value.trim();
       const city = document.getElementById('city').value.trim();
-      const state = document.getElementById('state').value.trim();
+      const state = document.getElementById('state').value.trim().toUpperCase();
       const zip = document.getElementById('zip').value.trim();
+
+      // Validate state code (2 letters)
+      if (state && !/^[A-Z]{2}$/.test(state)) {
+        console.log('Invalid state code, skipping calculation');
+        return;
+      }
+
+      // Validate ZIP code format (5 digits or 5+4)
+      if (zip && !/^\d{5}(-?\d{4})?$/.test(zip)) {
+        console.log('Invalid ZIP format, skipping calculation');
+        return;
+      }
 
       if (!address || !city || !state || !zip) {
         // Not ready yet - need address for tax calculation
@@ -517,16 +532,37 @@
       }
 
       try {
+        // Cancel previous payment intent if exists
+        if (previousPaymentIntentId) {
+          try {
+            await fetch('/cancel-payment-intent', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                paymentIntentId: previousPaymentIntentId,
+              }),
+            });
+          } catch (cancelError) {
+            console.log('Could not cancel previous payment intent:', cancelError);
+            // Continue anyway - not critical
+          }
+        }
+
         // Get name if provided, use placeholder if not (name not needed for tax calc)
         const name = document.getElementById('ship-name').value.trim() || 'Customer';
+
+        // Normalize ZIP code (remove dash if present for consistency)
+        const normalizedZip = zip.replace('-', '');
 
         const shippingAddress = {
           name: name,
           address: address,
           address2: document.getElementById('address2').value,
           city: city,
-          state: state,
-          zip: zip,
+          state: state.toUpperCase(),
+          zip: normalizedZip.substring(0, 5), // Use only 5-digit ZIP for tax calc
           country: document.getElementById('country').value,
         };
 
@@ -563,6 +599,12 @@
         // Cache the results
         cachedClientSecret = data.clientSecret;
         cachedBreakdown = data.breakdown;
+
+        // Extract and store payment intent ID for potential cancellation
+        if (data.clientSecret) {
+          const parts = data.clientSecret.split('_secret_');
+          previousPaymentIntentId = parts[0];
+        }
 
         // Update the UI
         renderOrderSummary(data.breakdown);
@@ -1021,6 +1063,11 @@
 
         localStorage.removeItem('mel-cart');
 
+        // Clear payment intent tracking
+        previousPaymentIntentId = null;
+        cachedClientSecret = null;
+        cachedBreakdown = null;
+
         setTimeout(() => {
           window.location.href = '/';
         }, 3000);
@@ -1071,6 +1118,12 @@
       radio.addEventListener('change', (e) => {
         updateShippingRequirements(e.target.value === 'ship');
       });
+    });
+
+    // Add auto-uppercase for state field
+    const stateInput = document.getElementById('state');
+    stateInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.toUpperCase();
     });
 
     // Add event listeners to all shipping fields for auto-calculation
