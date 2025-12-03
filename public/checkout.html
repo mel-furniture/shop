@@ -754,21 +754,41 @@
 
     // Handle shipping address change to calculate tax
     paymentRequest.on('shippingaddresschange', async (ev) => {
+      console.log('Shipping address change event triggered');
+      console.log('Address data:', ev.shippingAddress);
+
       try {
         const address = ev.shippingAddress;
         const cart = getCart();
         const subtotal = calculateTotal();
 
+        // Validate we have essential address info
+        if (!address.postalCode || !address.region) {
+          console.error('Missing postal code or region');
+          ev.updateWith({
+            status: 'invalid_shipping_address',
+            shippingOptions: [{
+              id: 'standard',
+              label: 'Standard Shipping',
+              detail: 'Delivery within 5-7 business days',
+              amount: SHIPPING_AMOUNT,
+            }],
+          });
+          return;
+        }
+
         // Prepare shipping address for tax calculation
         const shippingAddress = {
           name: address.recipient || 'Customer',
-          address: address.addressLine[0] || '',
-          address2: address.addressLine[1] || '',
-          city: address.city || '',
+          address: (address.addressLine && address.addressLine[0]) || 'Address',
+          address2: (address.addressLine && address.addressLine[1]) || '',
+          city: address.city || 'City',
           state: address.region || '',
           zip: address.postalCode || '',
           country: address.country || 'US',
         };
+
+        console.log('Prepared shipping address:', shippingAddress);
 
         // Calculate tax by calling our serverless function
         const response = await fetch('/create-payment-intent', {
@@ -783,48 +803,93 @@
           }),
         });
 
-        const { clientSecret, breakdown, error } = await response.json();
+        console.log('Response status:', response.status);
 
-        if (error) {
-          ev.updateWith({ status: 'invalid_shipping_address' });
+        if (!response.ok) {
+          console.error('API returned error status:', response.status);
+          const errorText = await response.text();
+          console.error('Error text:', errorText);
+          ev.updateWith({
+            status: 'fail',
+            shippingOptions: [{
+              id: 'standard',
+              label: 'Standard Shipping',
+              detail: 'Delivery within 5-7 business days',
+              amount: SHIPPING_AMOUNT,
+            }],
+          });
+          return;
+        }
+
+        const data = await response.json();
+        console.log('Response data:', data);
+
+        if (data.error) {
+          console.error('API returned error:', data.error);
+          ev.updateWith({
+            status: 'fail',
+            shippingOptions: [{
+              id: 'standard',
+              label: 'Standard Shipping',
+              detail: 'Delivery within 5-7 business days',
+              amount: SHIPPING_AMOUNT,
+            }],
+          });
           return;
         }
 
         // Cache the payment intent for later use
-        expressCheckoutClientSecret = clientSecret;
+        expressCheckoutClientSecret = data.clientSecret;
         expressCheckoutShippingAddress = shippingAddress;
 
         // Update payment request with tax included
         const displayItems = [
           {
             label: 'Subtotal',
-            amount: breakdown.subtotal,
+            amount: data.breakdown.subtotal,
           },
           {
             label: 'Shipping',
-            amount: breakdown.shipping,
+            amount: data.breakdown.shipping,
           },
         ];
 
-        if (breakdown.tax > 0) {
+        if (data.breakdown.tax > 0) {
           displayItems.push({
             label: 'Tax',
-            amount: breakdown.tax,
+            amount: data.breakdown.tax,
           });
         }
+
+        console.log('Updating with total:', data.breakdown.total);
 
         ev.updateWith({
           status: 'success',
           total: {
             label: 'Total',
-            amount: breakdown.total,
+            amount: data.breakdown.total,
           },
           displayItems: displayItems,
+          shippingOptions: [{
+            id: 'standard',
+            label: 'Standard Shipping',
+            detail: 'Delivery within 5-7 business days',
+            amount: SHIPPING_AMOUNT,
+          }],
         });
 
       } catch (err) {
-        console.error('Error calculating tax for express checkout:', err);
-        ev.updateWith({ status: 'fail' });
+        console.error('Exception in shipping address handler:', err);
+        console.error('Error stack:', err.stack);
+        ev.updateWith({
+          status: 'fail',
+          shippingOptions: [{
+            id: 'standard',
+            label: 'Standard Shipping',
+            detail: 'Delivery within 5-7 business days',
+            amount: SHIPPING_AMOUNT,
+          }],
+        });
       }
     });
 
