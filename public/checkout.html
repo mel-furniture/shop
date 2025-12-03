@@ -178,8 +178,9 @@
       border-color: #000;
     }
 
-    /* Express Checkout Buttons */
+    /* Express Checkout Buttons - Disabled for now due to dynamic pricing */
     .express-checkout {
+      display: none;
       margin-bottom: 1.5rem;
       max-width: 300px;
     }
@@ -189,6 +190,7 @@
     }
 
     .or-divider {
+      display: none;
       text-align: center;
       margin: 1.5rem 0;
       position: relative;
@@ -475,6 +477,92 @@
       return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
     }
 
+    // Store payment intent details
+    let cachedClientSecret = null;
+    let cachedBreakdown = null;
+    let isCalculating = false;
+
+    // Calculate totals with shipping and tax
+    async function calculateOrderTotal() {
+      const cart = getCart();
+      const deliveryMethod = document.querySelector('input[name="delivery"]:checked')?.value || 'ship';
+
+      // Only calculate if shipping is selected and address is complete
+      if (deliveryMethod !== 'ship') {
+        cachedBreakdown = null;
+        renderOrderSummary(null);
+        return;
+      }
+
+      // Check if all required address fields are filled
+      const name = document.getElementById('ship-name').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const city = document.getElementById('city').value.trim();
+      const state = document.getElementById('state').value.trim();
+      const zip = document.getElementById('zip').value.trim();
+
+      if (!name || !address || !city || !state || !zip) {
+        // Not ready yet
+        return;
+      }
+
+      if (isCalculating) return;
+      isCalculating = true;
+
+      // Update UI to show we're calculating
+      const taxStatus = document.getElementById('tax-status');
+      if (taxStatus) {
+        taxStatus.textContent = 'Calculating...';
+      }
+
+      try {
+        const shippingAddress = {
+          name: name,
+          address: address,
+          address2: document.getElementById('address2').value,
+          city: city,
+          state: state,
+          zip: zip,
+          country: document.getElementById('country').value,
+        };
+
+        const response = await fetch('/functions/create-payment-intent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            items: cart,
+            shippingAddress: shippingAddress,
+            deliveryMethod: deliveryMethod,
+          }),
+        });
+
+        const { clientSecret, breakdown, error } = await response.json();
+
+        if (error) {
+          console.error('Error calculating total:', error);
+          return;
+        }
+
+        // Cache the results
+        cachedClientSecret = clientSecret;
+        cachedBreakdown = breakdown;
+
+        // Update the UI
+        renderOrderSummary(breakdown);
+
+        // Update button text with actual total
+        const submitButton = document.getElementById('submit-button');
+        submitButton.textContent = `Pay $${(breakdown.total / 100).toFixed(2)}`;
+
+      } catch (err) {
+        console.error('Error calculating total:', err);
+      } finally {
+        isCalculating = false;
+      }
+    }
+
     function renderOrderSummary(breakdown = null) {
       const cart = getCart();
       const orderItems = document.getElementById('order-items');
@@ -541,7 +629,7 @@
         priceBreakdownHTML += `
           <div class="price-row">
             <span>Tax</span>
-            <span>Calculated at checkout</span>
+            <span id="tax-status">${isCalculating ? 'Calculating...' : 'Enter address to calculate'}</span>
           </div>
         `;
       }
@@ -712,45 +800,47 @@
       messageDiv.className = 'processing';
 
       try {
-        // Get delivery method
         const deliveryMethod = document.querySelector('input[name="delivery"]:checked').value;
+        let clientSecret = cachedClientSecret;
 
-        // Collect shipping address if shipping
-        let shippingAddress = null;
-        if (deliveryMethod === 'ship') {
-          shippingAddress = {
-            name: document.getElementById('ship-name').value,
-            address: document.getElementById('address').value,
-            address2: document.getElementById('address2').value,
-            city: document.getElementById('city').value,
-            state: document.getElementById('state').value,
-            zip: document.getElementById('zip').value,
-            country: document.getElementById('country').value,
-          };
-        }
+        // If we don't have a cached payment intent, create one now
+        if (!clientSecret) {
+          let shippingAddress = null;
+          if (deliveryMethod === 'ship') {
+            shippingAddress = {
+              name: document.getElementById('ship-name').value,
+              address: document.getElementById('address').value,
+              address2: document.getElementById('address2').value,
+              city: document.getElementById('city').value,
+              state: document.getElementById('state').value,
+              zip: document.getElementById('zip').value,
+              country: document.getElementById('country').value,
+            };
+          }
 
-        const response = await fetch('/functions/create-payment-intent', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            items: cart,
-            shippingAddress: shippingAddress,
-            deliveryMethod: deliveryMethod,
-          }),
-        });
+          const response = await fetch('/functions/create-payment-intent', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              items: cart,
+              shippingAddress: shippingAddress,
+              deliveryMethod: deliveryMethod,
+            }),
+          });
 
-        const { clientSecret, breakdown, error } = await response.json();
+          const { clientSecret: newClientSecret, breakdown, error } = await response.json();
 
-        if (error) {
-          throw new Error(error);
-        }
+          if (error) {
+            throw new Error(error);
+          }
 
-        // Update order summary with actual breakdown from server
-        if (breakdown) {
-          renderOrderSummary(breakdown);
-          submitButton.textContent = `Pay $${(breakdown.total / 100).toFixed(2)}`;
+          clientSecret = newClientSecret;
+
+          if (breakdown) {
+            renderOrderSummary(breakdown);
+          }
         }
 
         const { error: stripeError } = await stripe.confirmCardPayment(clientSecret, {
@@ -777,14 +867,18 @@
         setTimeout(() => {
           window.location.href = '/';
         }, 3000);
-        
+
       } catch (err) {
         messageDiv.textContent = err.message;
         messageDiv.className = 'error';
         messageDiv.style.display = 'block';
         submitButton.disabled = false;
-        const total = calculateTotal();
-        submitButton.textContent = `Pay $${total.toFixed(2)}`;
+        if (cachedBreakdown) {
+          submitButton.textContent = `Pay $${(cachedBreakdown.total / 100).toFixed(2)}`;
+        } else {
+          const total = calculateTotal();
+          submitButton.textContent = `Pay $${total.toFixed(2)}`;
+        }
       }
     });
 
@@ -807,6 +901,9 @@
         shippingFields.classList.remove('show');
         shippingInputs.forEach(input => input.required = false);
       }
+      // Clear cached payment intent when delivery method changes
+      cachedClientSecret = null;
+      cachedBreakdown = null;
       // Update order summary when delivery method changes
       renderOrderSummary();
     }
@@ -814,6 +911,33 @@
     deliveryRadios.forEach(radio => {
       radio.addEventListener('change', (e) => {
         updateShippingRequirements(e.target.value === 'ship');
+      });
+    });
+
+    // Add event listeners to shipping address fields for auto-calculation
+    let calculateTimeout = null;
+
+    function scheduleCalculation() {
+      // Clear any pending calculation
+      if (calculateTimeout) {
+        clearTimeout(calculateTimeout);
+      }
+
+      // Schedule a new calculation after 1 second of no typing
+      calculateTimeout = setTimeout(() => {
+        calculateOrderTotal();
+      }, 1000);
+    }
+
+    // Add listeners to all shipping fields
+    shippingInputs.forEach(input => {
+      input.addEventListener('input', scheduleCalculation);
+      input.addEventListener('blur', () => {
+        // Also calculate immediately when field loses focus
+        if (calculateTimeout) {
+          clearTimeout(calculateTimeout);
+        }
+        calculateOrderTotal();
       });
     });
 
