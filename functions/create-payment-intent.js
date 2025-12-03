@@ -167,17 +167,8 @@ export async function onRequest(context) {
           tax_code: 'txcd_99999999', // General tangible goods - update if you have specific codes
         }));
 
-        // Add shipping as a line item for tax calculation
-        if (shippingAmount > 0) {
-          lineItems.push({
-            amount: shippingAmount,
-            reference: 'shipping_fee',
-            tax_code: 'txcd_92010001', // Shipping tax code
-          });
-        }
-
-        // Create tax calculation
-        taxCalculation = await stripe.tax.calculations.create({
+        // Create tax calculation with shipping_cost parameter
+        const taxCalcParams = {
           currency: 'usd',
           line_items: lineItems,
           customer_details: {
@@ -191,7 +182,16 @@ export async function onRequest(context) {
             },
             address_source: 'shipping',
           },
-        });
+        };
+
+        // Add shipping cost if applicable (must use shipping_cost param, not line item)
+        if (shippingAmount > 0) {
+          taxCalcParams.shipping_cost = {
+            amount: shippingAmount,
+          };
+        }
+
+        taxCalculation = await stripe.tax.calculations.create(taxCalcParams);
 
         // Get the tax amount from the calculation
         taxAmount = taxCalculation.tax_amount_exclusive;
