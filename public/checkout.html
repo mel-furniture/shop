@@ -526,6 +526,8 @@
           country: document.getElementById('country').value,
         };
 
+        console.log('Calculating order total with address:', shippingAddress);
+
         const response = await fetch('/functions/create-payment-intent', {
           method: 'POST',
           headers: {
@@ -538,26 +540,47 @@
           }),
         });
 
-        const { clientSecret, breakdown, error } = await response.json();
+        console.log('Response status:', response.status);
 
-        if (error) {
-          console.error('Error calculating total:', error);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('API error:', errorText);
+          throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Response data:', data);
+
+        if (data.error) {
+          console.error('Error calculating total:', data.error);
+          // Show error in UI
+          const taxStatus = document.getElementById('tax-status');
+          if (taxStatus) {
+            taxStatus.textContent = 'Error calculating tax';
+          }
           return;
         }
 
         // Cache the results
-        cachedClientSecret = clientSecret;
-        cachedBreakdown = breakdown;
+        cachedClientSecret = data.clientSecret;
+        cachedBreakdown = data.breakdown;
+
+        console.log('Cached breakdown:', cachedBreakdown);
 
         // Update the UI
-        renderOrderSummary(breakdown);
+        renderOrderSummary(data.breakdown);
 
         // Update button text with actual total
         const submitButton = document.getElementById('submit-button');
-        submitButton.textContent = `Pay $${(breakdown.total / 100).toFixed(2)}`;
+        submitButton.textContent = `Pay $${(data.breakdown.total / 100).toFixed(2)}`;
 
       } catch (err) {
         console.error('Error calculating total:', err);
+        // Reset UI on error
+        const taxStatus = document.getElementById('tax-status');
+        if (taxStatus) {
+          taxStatus.textContent = 'Error - try again';
+        }
       } finally {
         isCalculating = false;
       }
