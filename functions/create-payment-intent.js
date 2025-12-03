@@ -9,6 +9,19 @@ const PRODUCTS = {
 };
 
 export async function onRequest(context) {
+  // Handle CORS preflight request
+  if (context.request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Max-Age': '86400',
+      },
+    });
+  }
+
   // Only allow POST requests
   if (context.request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
