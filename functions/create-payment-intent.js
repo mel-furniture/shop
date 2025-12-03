@@ -34,10 +34,6 @@ export async function onRequest(context) {
   }
 
   try {
-    // Debug: Check if API key is available
-    console.log('STRIPE_SECRET_KEY exists:', !!context.env.STRIPE_SECRET_KEY);
-    console.log('Key starts with:', context.env.STRIPE_SECRET_KEY?.substring(0, 7));
-
     const stripe = require('stripe')(context.env.STRIPE_SECRET_KEY);
 
     // Get data from request body
@@ -197,9 +193,9 @@ export async function onRequest(context) {
         taxAmount = taxCalculation.tax_amount_exclusive;
 
       } catch (taxError) {
-        console.error('Tax calculation error:', taxError);
-        // Continue without tax if calculation fails (can happen if outside MN)
-        // Stripe Tax only charges if tax is actually calculated
+        // Continue without tax if calculation fails
+        // This is expected for non-registered states (no Stripe Tax fee charged)
+        console.log('Tax calculation skipped:', taxError.message);
       }
     }
 

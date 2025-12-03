@@ -526,8 +526,6 @@
           country: document.getElementById('country').value,
         };
 
-        console.log('Calculating order total with address:', shippingAddress);
-
         const response = await fetch('/create-payment-intent', {
           method: 'POST',
           headers: {
@@ -540,16 +538,13 @@
           }),
         });
 
-        console.log('Response status:', response.status);
-
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('API error:', errorText);
+          console.error('Payment calculation error:', errorText);
           throw new Error(`API error: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('Response data:', data);
 
         if (data.error) {
           console.error('Error calculating total:', data.error);
@@ -564,8 +559,6 @@
         // Cache the results
         cachedClientSecret = data.clientSecret;
         cachedBreakdown = data.breakdown;
-
-        console.log('Cached breakdown:', cachedBreakdown);
 
         // Update the UI
         renderOrderSummary(data.breakdown);
