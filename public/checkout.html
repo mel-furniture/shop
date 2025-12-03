@@ -178,9 +178,8 @@
       border-color: #000;
     }
 
-    /* Express Checkout Buttons - Disabled for now due to dynamic pricing */
+    /* Express Checkout Buttons */
     .express-checkout {
-      display: none;
       margin-bottom: 1.5rem;
       max-width: 300px;
     }
@@ -190,7 +189,6 @@
     }
 
     .or-divider {
-      display: none;
       text-align: center;
       margin: 1.5rem 0;
       position: relative;
@@ -482,6 +480,10 @@
     let cachedBreakdown = null;
     let isCalculating = false;
 
+    // Store express checkout payment intent
+    let expressCheckoutClientSecret = null;
+    let expressCheckoutShippingAddress = null;
+
     // Calculate totals with shipping and tax
     async function calculateOrderTotal() {
       const cart = getCart();
@@ -697,17 +699,37 @@
 
     // Create Payment Request Button (Apple Pay, Google Pay, Link)
     const cart = getCart();
-    const total = calculateTotal();
-    
+    const subtotal = calculateTotal();
+    const SHIPPING_AMOUNT = 3000; // $30 in cents
+
     const paymentRequest = stripe.paymentRequest({
       country: 'US',
       currency: 'usd',
       total: {
         label: 'Total',
-        amount: Math.round(total * 100),
+        amount: Math.round(subtotal * 100) + SHIPPING_AMOUNT, // Initial estimate without tax
       },
+      displayItems: [
+        {
+          label: 'Subtotal',
+          amount: Math.round(subtotal * 100),
+        },
+        {
+          label: 'Shipping',
+          amount: SHIPPING_AMOUNT,
+        },
+      ],
       requestPayerName: true,
       requestPayerEmail: true,
+      requestShipping: true,
+      shippingOptions: [
+        {
+          id: 'standard',
+          label: 'Standard Shipping',
+          detail: 'Delivery within 5-7 business days',
+          amount: SHIPPING_AMOUNT,
+        },
+      ],
     });
 
     const prButton = elements.create('paymentRequestButton', {
@@ -730,31 +752,25 @@
       }
     })();
 
-    // Handle express checkout
-    paymentRequest.on('paymentmethod', async (ev) => {
+    // Handle shipping address change to calculate tax
+    paymentRequest.on('shippingaddresschange', async (ev) => {
       try {
-        // Get delivery method (default to ship for express checkout)
-        const deliveryMethodInput = document.querySelector('input[name="delivery"]:checked');
-        const deliveryMethod = deliveryMethodInput ? deliveryMethodInput.value : 'ship';
+        const address = ev.shippingAddress;
+        const cart = getCart();
+        const subtotal = calculateTotal();
 
-        // Collect shipping address if shipping
-        let shippingAddress = null;
-        if (deliveryMethod === 'ship') {
-          // For express checkout, try to get address from form if filled
-          const addressValue = document.getElementById('address').value;
-          if (addressValue) {
-            shippingAddress = {
-              name: document.getElementById('ship-name').value,
-              address: addressValue,
-              address2: document.getElementById('address2').value,
-              city: document.getElementById('city').value,
-              state: document.getElementById('state').value,
-              zip: document.getElementById('zip').value,
-              country: document.getElementById('country').value,
-            };
-          }
-        }
+        // Prepare shipping address for tax calculation
+        const shippingAddress = {
+          name: address.recipient || 'Customer',
+          address: address.addressLine[0] || '',
+          address2: address.addressLine[1] || '',
+          city: address.city || '',
+          state: address.region || '',
+          zip: address.postalCode || '',
+          country: address.country || 'US',
+        };
 
+        // Calculate tax by calling our serverless function
         const response = await fetch('/create-payment-intent', {
           method: 'POST',
           headers: {
@@ -763,17 +779,68 @@
           body: JSON.stringify({
             items: cart,
             shippingAddress: shippingAddress,
-            deliveryMethod: deliveryMethod,
+            deliveryMethod: 'ship',
           }),
         });
-        
-        const { clientSecret, error } = await response.json();
-        
+
+        const { clientSecret, breakdown, error } = await response.json();
+
         if (error) {
+          ev.updateWith({ status: 'invalid_shipping_address' });
+          return;
+        }
+
+        // Cache the payment intent for later use
+        expressCheckoutClientSecret = clientSecret;
+        expressCheckoutShippingAddress = shippingAddress;
+
+        // Update payment request with tax included
+        const displayItems = [
+          {
+            label: 'Subtotal',
+            amount: breakdown.subtotal,
+          },
+          {
+            label: 'Shipping',
+            amount: breakdown.shipping,
+          },
+        ];
+
+        if (breakdown.tax > 0) {
+          displayItems.push({
+            label: 'Tax',
+            amount: breakdown.tax,
+          });
+        }
+
+        ev.updateWith({
+          status: 'success',
+          total: {
+            label: 'Total',
+            amount: breakdown.total,
+          },
+          displayItems: displayItems,
+        });
+
+      } catch (err) {
+        console.error('Error calculating tax for express checkout:', err);
+        ev.updateWith({ status: 'fail' });
+      }
+    });
+
+    // Handle express checkout payment
+    paymentRequest.on('paymentmethod', async (ev) => {
+      try {
+        // Use the cached payment intent from shippingaddresschange
+        const clientSecret = expressCheckoutClientSecret;
+
+        if (!clientSecret) {
+          console.error('No payment intent created - this should not happen');
           ev.complete('fail');
           return;
         }
-        
+
+        // Confirm the payment
         const { error: confirmError } = await stripe.confirmCardPayment(
           clientSecret,
           { payment_method: ev.paymentMethod.id },
@@ -781,15 +848,22 @@
         );
 
         if (confirmError) {
+          console.error('Payment confirmation error:', confirmError);
           ev.complete('fail');
         } else {
           ev.complete('success');
           localStorage.removeItem('mel-cart');
+
+          // Clear cached data
+          expressCheckoutClientSecret = null;
+          expressCheckoutShippingAddress = null;
+
           setTimeout(() => {
             window.location.href = '/';
           }, 1000);
         }
       } catch (err) {
+        console.error('Express checkout error:', err);
         ev.complete('fail');
       }
     });
